@@ -37,7 +37,7 @@ function injectProfile(profile) {
   // Reload profile if coming back from edit
   if(window.location.search.includes('refresh=1')) {
     const { data: freshProfile } = await window.sb.from('users_profiles').select('*').eq('id', session.user.id).single();
-    if(freshProfile) { window.userProfile = freshProfile; profile = freshProfile; }
+    if(freshProfile) { window.userProfile = freshProfile; }
     window.history.replaceState({}, '', 'index.html');
   }
 
