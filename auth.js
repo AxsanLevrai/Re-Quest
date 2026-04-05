@@ -32,6 +32,8 @@ function injectProfile(profile) {
   if (!profile) { window.location.href = 'profile-setup.html'; return; }
 
   window.userProfile = profile;
+  // Signal app that auth is ready
+  window.dispatchEvent(new Event('auth-ready'));
   // Reload profile if coming back from edit
   if(window.location.search.includes('refresh=1')) {
     const { data: freshProfile } = await window.sb.from('users_profiles').select('*').eq('id', session.user.id).single();

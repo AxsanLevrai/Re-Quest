@@ -1008,9 +1008,14 @@ document.querySelectorAll('.size-btn').forEach(b => {
 loadMoodLog();
 loadTrash();
 document.getElementById('btn-open-trash')?.addEventListener('click', openTrashModal);
-Promise.all([loadGoals().catch(()=>seedGoals()),loadBg().catch(()=>({type:'none',value:'',opacity:82,blur:0}))]).then(([g,bg])=>{
+function initApp() {
+  Promise.all([loadGoals().catch(()=>seedGoals()),loadBg().catch(()=>({type:'none',value:'',opacity:82,blur:0}))]).then(([g,bg])=>{
   goals=g;bgSettings=bg;tempBg={...bg};applyBg(bg);applyTheme(isLight);applyCardSize(cardSize);applyAccent(currentAccent);navigate('accueil');updateSidebar();updateCatNav();checkDailyMood();loadHP();updateHPBar();
 }).catch(()=>{goals=seedGoals();applyTheme(isLight);applyCardSize(cardSize);applyAccent(currentAccent);navigate('accueil');loadHP();updateHPBar();});
+}
+// Wait for auth before loading app
+if(window.currentUser) { initApp(); }
+else { window.addEventListener('auth-ready', initApp, {once:true}); }
 
 async function loadMoodLog(){
   if(window.sb && window.currentUser) {
