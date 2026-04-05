@@ -1026,6 +1026,7 @@ async function initApp() {
   try {
     // Load everything in order, waiting for each
     await loadMoodLog();
+    await loadTrash();
     await loadHP();
     const [g, bg] = await Promise.all([
       loadGoals().catch(()=>seedGoals()),
