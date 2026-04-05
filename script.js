@@ -2863,16 +2863,22 @@ if(window.currentUser) {
   // ── NEW PAGE (blank) ───────────────────────────────────
   function openNewPage(){
     currentPageId = null;
-    // Let normal navigate('editor') handle view switching
+    // Vider le brouillon avant de naviguer pour eviter que restoreEditor le recharge
+    const emptyDraft = {title:'',content:''};
+    lsSet('hz_editor', emptyDraft);
+    if(window.sb && window.currentUser){
+      window.sb.from('users_data')
+        .upsert({id: window.currentUser.id, editor_draft: emptyDraft}, {onConflict: 'id'})
+        .then(({error})=>{ if(error) console.error('clearEditor error:', error); });
+    }
     if(typeof navigate === 'function') navigate('editor');
-    // Clear fields after navigate (which may restore saved draft)
     setTimeout(function(){
       var titleEl = document.getElementById('editor-title-input');
       var bodyEl  = document.getElementById('editor-body');
       if(titleEl) titleEl.value = '';
       if(bodyEl)  bodyEl.innerHTML = '';
-      renderPagesNav(); // deactivate any active page
-    }, 0);
+      renderPagesNav();
+    }, 50);
   }
 
   // ── AUTO-SAVE ─────────────────────────────────────────
