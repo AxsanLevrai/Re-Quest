@@ -4623,9 +4623,11 @@ function buildProfileView() {
   const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR', {month:'long', year:'numeric'}) : '';
   el.innerHTML = `
     <div style="max-width:700px;margin:0 auto;padding:24px 16px">
-      <div style="position:relative;border-radius:12px;overflow:hidden;margin-bottom:55px;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.1)">
+      <div style="position:relative;border-radius:12px;overflow:hidden;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.1);margin-bottom:16px">
         <div style="height:160px;background:${p.banniere_url ? 'url('+p.banniere_url+') center/cover' : 'linear-gradient(135deg,rgba(0,245,255,0.1),rgba(139,91,255,0.1))'};"></div>
-        <div style="position:absolute;bottom:-45px;left:24px;width:80px;height:80px;border-radius:50%;border:3px solid rgba(0,245,255,0.4);overflow:hidden;background:var(--night2)">
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;padding:0 24px;margin-bottom:16px">
+        <div style="width:72px;height:72px;border-radius:50%;border:3px solid rgba(0,245,255,0.4);overflow:hidden;background:var(--night2);flex-shrink:0">
           <img src="${p.avatar_url||''}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
         </div>
       </div>
