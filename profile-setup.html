@@ -258,7 +258,7 @@ let bannerFile = null;
   // Check if profile already exists
   const { data } = await sb.from('users_profiles').select('*').eq('id', currentUser.id).single();
   if(data) {
-    isEditMode = true;
+    isEditMode = true; window._profileData = data;
     console.log('EDIT MODE - data:', data);
     document.getElementById('pseudo').value = data.pseudo || '';
     document.getElementById('statut').value = data.statut || '';
@@ -358,8 +358,8 @@ async function saveProfile() {
   showLoading('Création du profil...');
 
   try {
-    let avatar_url = currentUser.user_metadata?.avatar_url || '';
-    let banniere_url = '';
+    let avatar_url = (window._profileData && window._profileData.avatar_url) ? window._profileData.avatar_url : (currentUser.user_metadata?.avatar_url || '');
+    let banniere_url = (window._profileData && window._profileData.banniere_url) ? window._profileData.banniere_url : '';
 
     // Upload avatar if provided
     if(avatarFile) {
