@@ -2861,6 +2861,14 @@ if(window.currentUser) {
     var bodyEl  = document.getElementById('editor-body');
     if(titleEl) titleEl.value = page.title || '';
     if(bodyEl)  bodyEl.innerHTML = page.content || '';
+    // Vider hz_editor pour que "Nouvelle page" ne recharge pas ce contenu
+    const emptyDraft = {title:'',content:''};
+    lsSet('hz_editor', emptyDraft);
+    if(window.sb && window.currentUser){
+      window.sb.from('users_data')
+        .upsert({id: window.currentUser.id, editor_draft: emptyDraft}, {onConflict: 'id'})
+        .then(({error})=>{ if(error) console.error('clearEditor on openPage error:', error); });
+    }
   }
 
   // ── NEW PAGE (blank) ───────────────────────────────────
