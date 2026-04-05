@@ -1553,6 +1553,7 @@ document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
 
     // Restore — charge depuis Supabase puis applique, seulement si pas de page existante ouverte
     async function restoreEditor(){
+      if(window._skipRestore) return;
       // Si une page existante est ouverte, ne pas ecraser avec le brouillon
       if(typeof window._currentPageId !== 'undefined' && window._currentPageId !== null) return;
       if(window.sb && window.currentUser){
@@ -2889,20 +2890,22 @@ if(window.currentUser) {
         .upsert({id: window.currentUser.id, editor_draft: emptyDraft}, {onConflict: 'id'})
         .then(({error})=>{ if(error) console.error('clearEditor error:', error); });
     }
+    // Bloquer restoreEditor pendant l'ouverture
+    window._skipRestore = true;
     // Vider les champs immediatement avant navigate
     var titleEl = document.getElementById('editor-title-input');
     var bodyEl  = document.getElementById('editor-body');
     if(titleEl) titleEl.value = '';
     if(bodyEl)  bodyEl.innerHTML = '';
     if(typeof navigate === 'function') navigate('editor');
-    // Revider apres navigate au cas ou
     setTimeout(function(){
       var titleEl = document.getElementById('editor-title-input');
       var bodyEl  = document.getElementById('editor-body');
       if(titleEl) titleEl.value = '';
       if(bodyEl)  bodyEl.innerHTML = '';
       renderPagesNav();
-    }, 300);
+      window._skipRestore = false;
+    }, 500);
   }
 
   // ── AUTO-SAVE ─────────────────────────────────────────
