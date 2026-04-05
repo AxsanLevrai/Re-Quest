@@ -354,7 +354,7 @@ async function loginGoogle() {
   showLoading();
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/profile-setup.html' }
+    options: { redirectTo: window.location.origin + '/index.html' }
   });
   if(error) { hideLoading(); showMsg('login-msg', error.message, 'error'); }
 }
