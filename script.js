@@ -4218,9 +4218,9 @@ loadCalEvents().then(evs=>{
   async function loadAS(){
     try{
       if(window.sb && window.currentUser) {
-        const {data: row, error} = await window.sb.from('users_achievements').select('data').eq('id', window.currentUser.id).single();
-        if(!error && row && row.data) { as = row.data; localStorage.setItem(LS_KEY, JSON.stringify(as)); }
-        else { as = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }
+        const {data: row, error} = await window.sb.from('users_achievements').select('data').eq('id', window.currentUser.id).maybeSingle();
+        if(row && row.data) { as = row.data; localStorage.setItem(LS_KEY, JSON.stringify(as)); }
+        else { as = {}; } // New user, start fresh
       } else { as = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }
     }catch(e){ as={}; }
     if(!as.unlocked)  as.unlocked  = {};
