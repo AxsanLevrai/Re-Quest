@@ -290,7 +290,7 @@ let bannerFile = null;
     document.getElementById('pseudo').value = meta.full_name.split(' ')[0];
     updatePreview();
   }
-  if(meta?.avatar_url) {
+  if(meta?.avatar_url && !isEditMode) {
     const img = document.getElementById('avatar-preview');
     img.src = meta.avatar_url;
     img.style.display = 'block';
