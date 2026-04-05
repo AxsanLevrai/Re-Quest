@@ -4643,7 +4643,10 @@ function buildProfileView() {
           <div style="font-size:13px;color:var(--accent);margin-bottom:6px">${p.statut||''}</div>
           <div style="font-size:11px;color:var(--fog);margin-bottom:16px;letter-spacing:0.5px">⚔️ Aventurier depuis ${joined}</div>
           ${p.bio ? '<div style="font-size:13px;color:#9896aa;line-height:1.7;margin-bottom:20px;padding:12px;background:rgba(0,245,255,0.03);border-radius:8px;border-left:2px solid rgba(0,245,255,0.2)">'+p.bio+'</div>' : ''}
-          <button onclick="window.location.href='profile-setup.html'" style="padding:8px 20px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.2);border-radius:6px;color:var(--accent);cursor:pointer;font-size:13px;transition:all 0.2s" onmouseover="this.style.background='rgba(0,245,255,0.15)'" onmouseout="this.style.background='rgba(0,245,255,0.08)'">✏️ Modifier le profil</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="window.location.href='profile-setup.html'" style="padding:8px 20px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.2);border-radius:6px;color:var(--accent);cursor:pointer;font-size:13px" onmouseover="this.style.background='rgba(0,245,255,0.15)'" onmouseout="this.style.background='rgba(0,245,255,0.08)'">✏️ Modifier le profil</button>
+            <button onclick="window.supabaseSignOut()" style="padding:8px 20px;background:rgba(255,50,50,0.08);border:1px solid rgba(255,50,50,0.2);border-radius:6px;color:#ff6b6b;cursor:pointer;font-size:13px" onmouseover="this.style.background='rgba(255,50,50,0.15)'" onmouseout="this.style.background='rgba(255,50,50,0.08)'">⏻ Déconnexion</button>
+          </div>
         </div>
       </div>
     </div>`;
