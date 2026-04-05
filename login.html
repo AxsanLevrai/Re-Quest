@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Re:Quest — Connexion</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --accent:#00f5ff;
+    --night:#05030f;
+    --night2:#0a0818;
+    --night3:#100e1f;
+    --snow:#e8e6f0;
+    --mist:#9896aa;
+    --fog:#5a5870;
+    --green:#00ff9d;
+    --neon-glow:0 0 20px rgba(0,245,255,0.5);
+  }
+  html,body{height:100%;overflow:hidden}
+  body{
+    background:var(--night);
+    font-family:'Outfit',sans-serif;
+    color:var(--snow);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    position:relative;
+  }
+
+  /* Animated background */
+  .bg{
+    position:fixed;inset:0;z-index:0;
+    background:radial-gradient(ellipse at 20% 50%, rgba(0,245,255,0.04) 0%, transparent 60%),
+               radial-gradient(ellipse at 80% 20%, rgba(123,95,255,0.06) 0%, transparent 50%),
+               radial-gradient(ellipse at 60% 80%, rgba(0,255,157,0.03) 0%, transparent 50%),
+               linear-gradient(135deg,#05030f 0%,#0a0520 50%,#05030f 100%);
+  }
+  .stars{position:fixed;inset:0;z-index:0;overflow:hidden}
+  .star{
+    position:absolute;
+    background:#fff;
+    border-radius:50%;
+    animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s);
+    opacity:0;
+  }
+  @keyframes twinkle{0%,100%{opacity:0}50%{opacity:var(--op,0.6)}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+  @keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(0,245,255,0.2)}50%{box-shadow:0 0 0 6px rgba(0,245,255,0)}}
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+  /* Card */
+  .card{
+    position:relative;z-index:10;
+    width:100%;max-width:420px;
+    margin:20px;
+    background:rgba(10,8,24,0.92);
+    border:1px solid rgba(0,245,255,0.15);
+    border-radius:16px;
+    padding:44px 40px;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6), inset 0 0 60px rgba(0,245,255,0.02);
+    backdrop-filter:blur(20px);
+    animation:fadeInUp 0.6s ease both;
+  }
+  .card::before{
+    content:'';position:absolute;top:0;left:40px;right:40px;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(0,245,255,0.5),transparent);
+  }
+
+  /* Logo */
+  .logo-wrap{text-align:center;margin-bottom:36px}
+  .logo-icon{
+    width:64px;height:64px;
+    background:rgba(0,245,255,0.07);
+    border:1px solid rgba(0,245,255,0.2);
+    border-radius:16px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:28px;
+    margin:0 auto 16px;
+    box-shadow:0 0 30px rgba(0,245,255,0.1);
+    animation:pulse-border 3s ease infinite;
+  }
+  .logo-title{
+    font-family:'Playfair Display',serif;
+    font-size:28px;font-weight:700;
+    color:var(--snow);
+    letter-spacing:1px;
+  }
+  .logo-title span{color:var(--accent);text-shadow:var(--neon-glow)}
+  .logo-sub{
+    font-size:12px;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--fog);margin-top:6px;
+  }
+
+  /* Tabs */
+  .tabs{
+    display:flex;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.07);
+    border-radius:8px;
+    padding:3px;
+    margin-bottom:28px;
+    gap:3px;
+  }
+  .tab{
+    flex:1;padding:9px;text-align:center;
+    font-size:13px;font-weight:500;letter-spacing:0.5px;
+    color:var(--fog);cursor:pointer;
+    border-radius:6px;border:none;background:none;
+    transition:all 0.2s;font-family:'Outfit',sans-serif;
+  }
+  .tab.active{
+    background:rgba(0,245,255,0.1);
+    color:var(--accent);
+    text-shadow:0 0 10px rgba(0,245,255,0.4);
+  }
+
+  /* Form */
+  .form{display:none;flex-direction:column;gap:14px}
+  .form.visible{display:flex}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fog)}
+  .field input{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:8px;
+    color:var(--snow);
+    font-family:'Outfit',sans-serif;
+    font-size:14px;
+    padding:12px 16px;
+    outline:none;
+    transition:all 0.2s;
+  }
+  .field input:focus{border-color:rgba(0,245,255,0.4);box-shadow:0 0 0 3px rgba(0,245,255,0.08);background:rgba(0,245,255,0.04)}
+  .field input::placeholder{color:var(--fog)}
+
+  /* Buttons */
+  .btn-main{
+    width:100%;padding:13px;
+    background:rgba(0,245,255,0.1);
+    border:1px solid rgba(0,245,255,0.3);
+    border-radius:8px;
+    color:var(--accent);
+    font-family:'Outfit',sans-serif;
+    font-size:14px;font-weight:600;
+    letter-spacing:1px;text-transform:uppercase;
+    cursor:pointer;
+    transition:all 0.2s;
+    margin-top:4px;
+    text-shadow:0 0 10px rgba(0,245,255,0.3);
+  }
+  .btn-main:hover{background:rgba(0,245,255,0.18);box-shadow:0 0 20px rgba(0,245,255,0.15);transform:translateY(-1px)}
+  .btn-main:active{transform:translateY(0)}
+  .btn-main:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+  .divider{
+    display:flex;align-items:center;gap:12px;
+    margin:4px 0;color:var(--fog);font-size:12px;
+  }
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08)}
+
+  .btn-google{
+    width:100%;padding:13px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:8px;
+    color:var(--snow);
+    font-family:'Outfit',sans-serif;
+    font-size:14px;font-weight:500;
+    cursor:pointer;
+    transition:all 0.2s;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .btn-google:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.22);transform:translateY(-1px)}
+  .btn-google svg{width:18px;height:18px;flex-shrink:0}
+
+  /* Error/success */
+  .msg{
+    font-size:12px;padding:10px 14px;border-radius:6px;
+    text-align:center;display:none;
+  }
+  .msg.error{background:rgba(255,45,107,0.12);border:1px solid rgba(255,45,107,0.3);color:#ff6b8a}
+  .msg.success{background:rgba(0,255,157,0.1);border:1px solid rgba(0,255,157,0.25);color:var(--green)}
+  .msg.visible{display:block}
+
+  /* Footer */
+  .card-footer{
+    text-align:center;margin-top:28px;
+    font-size:11px;color:var(--fog);letter-spacing:0.5px;line-height:1.7;
+  }
+  .card-footer a{color:var(--mist);text-decoration:none}
+  .card-footer a:hover{color:var(--accent)}
+
+  /* Loading overlay */
+  .loading-overlay{
+    display:none;
+    position:fixed;inset:0;z-index:100;
+    background:rgba(5,3,15,0.85);
+    backdrop-filter:blur(8px);
+    align-items:center;justify-content:center;
+    flex-direction:column;gap:16px;
+  }
+  .loading-overlay.visible{display:flex}
+  .loader{
+    width:40px;height:40px;
+    border:2px solid rgba(0,245,255,0.1);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+    box-shadow:0 0 20px rgba(0,245,255,0.2);
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:13px;color:var(--mist);letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="stars" id="stars"></div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loader"></div>
+  <div class="loading-text">Connexion en cours...</div>
+</div>
+
+<div class="card">
+  <div class="logo-wrap">
+    <div class="logo-icon">⚔️</div>
+    <div class="logo-title">Re<span>:</span>Quest</div>
+    <div class="logo-sub">Ta progression, ta légende</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-login" onclick="switchTab('login')">Connexion</button>
+    <button class="tab" id="tab-register" onclick="switchTab('register')">Inscription</button>
+  </div>
+
+  <!-- Login form -->
+  <div class="form visible" id="form-login">
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="ton@email.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div class="msg" id="login-msg"></div>
+    <button class="btn-main" onclick="loginEmail()">Connexion</button>
+    <div class="divider">ou</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continuer avec Google
+    </button>
+  </div>
+
+  <!-- Register form -->
+  <div class="form" id="form-register">
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="reg-email" placeholder="ton@email.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="reg-password" placeholder="8 caractères minimum" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label>Confirmer le mot de passe</label>
+      <input type="password" id="reg-password2" placeholder="••••••••" autocomplete="new-password">
+    </div>
+    <div class="msg" id="reg-msg"></div>
+    <button class="btn-main" onclick="registerEmail()">Créer mon compte</button>
+    <div class="divider">ou</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continuer avec Google
+    </button>
+  </div>
+
+  <div class="card-footer">
+    En continuant, tu acceptes les <a href="#">conditions d'utilisation</a><br>
+    Re:Quest — © 2026
+  </div>
+</div>
+
+<script>
+// ── Supabase init ─────────────────────────────────────────
+const SUPABASE_URL = 'https://pvucciyqokblpmtitypr.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2dWNjaXlxb2tibHBtdGl0eXByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNDQ4MzUsImV4cCI6MjA5MDkyMDgzNX0.1SM1WOaEP3ABa3k9rDT9TEvhXtDTtPi_N69aHm3Pz9A';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── Stars ─────────────────────────────────────────────────
+(function(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const size=Math.random()*2+0.5;
+    s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;--op:${0.3+Math.random()*0.5}`;
+    c.appendChild(s);
+  }
+})();
+
+// ── Check if already logged in ────────────────────────────
+(async function(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session) {
+    await redirectAfterLogin(session.user);
+  }
+})();
+
+// ── Handle OAuth callback (Google redirect) ───────────────
+sb.auth.onAuthStateChange(async (event, session) => {
+  if(event === 'SIGNED_IN' && session) {
+    await redirectAfterLogin(session.user);
+  }
+});
+
+async function redirectAfterLogin(user) {
+  showLoading();
+  // Check if profile exists
+  const { data } = await sb.from('users_profiles').select('id').eq('id', user.id).single();
+  if(data) {
+    window.location.href = 'index.html';
+  } else {
+    window.location.href = 'profile-setup.html';
+  }
+}
+
+// ── Tab switch ────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('form-login').classList.toggle('visible', tab==='login');
+  document.getElementById('form-register').classList.toggle('visible', tab==='register');
+}
+
+// ── Google login ──────────────────────────────────────────
+async function loginGoogle() {
+  showLoading();
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/profile-setup.html' }
+  });
+  if(error) { hideLoading(); showMsg('login-msg', error.message, 'error'); }
+}
+
+// ── Email login ───────────────────────────────────────────
+async function loginEmail() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if(!email || !password) return showMsg('login-msg', 'Remplis tous les champs.', 'error');
+  showLoading();
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error) { hideLoading(); showMsg('login-msg', 'Email ou mot de passe incorrect.', 'error'); }
+}
+
+// ── Email register ────────────────────────────────────────
+async function registerEmail() {
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const password2 = document.getElementById('reg-password2').value;
+  if(!email || !password) return showMsg('reg-msg', 'Remplis tous les champs.', 'error');
+  if(password.length < 8) return showMsg('reg-msg', 'Mot de passe trop court (8 caractères min).', 'error');
+  if(password !== password2) return showMsg('reg-msg', 'Les mots de passe ne correspondent pas.', 'error');
+  showLoading();
+  const { error } = await sb.auth.signUp({
+    email, password,
+    options: { emailRedirectTo: window.location.origin + '/profile-setup.html' }
+  });
+  if(error) { hideLoading(); showMsg('reg-msg', error.message, 'error'); }
+  else { hideLoading(); showMsg('reg-msg', 'Vérifie ta boîte mail pour confirmer ton compte !', 'success'); }
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + type + ' visible';
+}
+function showLoading() { document.getElementById('loading-overlay').classList.add('visible'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('visible'); }
+
+// Enter key
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Enter') return;
+  if(document.getElementById('form-login').classList.contains('visible')) loginEmail();
+  else registerEmail();
+});
+</script>
+</body>
+</html>
