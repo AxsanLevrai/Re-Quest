@@ -67,19 +67,17 @@ async function loadGoals(){
       const {data: row, error} = await window.sb.from('users_goals').select('data').eq('id', window.currentUser.id).single();
       if(!error && row && row.data && row.data.length) {
         const lean = row.data;
-        lsSet('hz_goals', lean); // sync to local
+        lsSet('hz_goals_'+window.currentUser.id, lean);
         return await Promise.all(lean.map(async g=>{
           const f={...g};
           try{const c=await idbGet('cov_'+g.id);if(c)f.cover=c;}catch(e){}
           if(f.files&&f.files.length)f.files=await Promise.all(f.files.map(async(fi,i)=>{try{const d=await idbGet('fil_'+g.id+'_'+i);if(d)return{...fi,data:d}}catch(e){}return fi;}));
           return f;
         }));
-      }
+      } else { return seedGoals(); } // No data in Supabase = new user
     } catch(e) { console.error('loadGoals Supabase error:', e); }
   }
-  // Fallback to local
-  const lean=lsGet('hz_goals',null);
-  if(!lean||!lean.length)return seedGoals();
+  return seedGoals();
   try{return await Promise.all(lean.map(async g=>{
     const f={...g};
     try{const c=await idbGet('cov_'+g.id);if(c)f.cover=c;}catch(e){}
