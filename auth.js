@@ -30,6 +30,12 @@ function injectProfile(profile) {
   if (!profile) { window.location.href = 'profile-setup.html'; return; }
 
   window.userProfile = profile;
+  // Reload profile if coming back from edit
+  if(window.location.search.includes('refresh=1')) {
+    const { data: freshProfile } = await window.sb.from('users_profiles').select('*').eq('id', session.user.id).single();
+    if(freshProfile) window.userProfile = freshProfile;
+    window.history.replaceState({}, '', 'index.html');
+  }
 
   // Inject pseudo dès que le DOM est prêt
   if(document.readyState === 'loading') {

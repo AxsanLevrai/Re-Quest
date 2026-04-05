@@ -409,7 +409,7 @@ async function saveProfile() {
     });
 
     showLoading(isEditMode ? 'Profil mis à jour ! ✨' : "C'est parti ! ⚔️");
-    setTimeout(() => { window.location.href = 'index.html'; }, 800);
+    setTimeout(() => { window.location.href = 'index.html?refresh=1'; }, 800);
 
   } catch(err) {
     hideLoading();
