@@ -2965,7 +2965,12 @@ if(window.currentUser) {
   }
 
   // ── INIT ─────────────────────────────────────────────
-  loadPages().then(() => renderPagesNav());
+  async function initPages(){
+    await loadPages();
+    renderPagesNav();
+  }
+  if(window.currentUser){ initPages(); }
+  else { window.addEventListener('auth-ready', initPages, {once:true}); }
 
   // Hook editor events after the editor IIFE has had a chance to init
   // We wait for _editorInit to be called the first time, then add our listeners
