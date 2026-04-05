@@ -403,11 +403,13 @@ async function saveProfile() {
 
     if(error) throw error;
 
-    // Create initial user data record
-    await sb.from('users_data').insert({
-      id: currentUser.id,
-      xp: 0, niveau: 1, hp: 100, streak: 0, streak_best: 0
-    });
+    // Create initial user data record (only on first profile creation)
+    if(!isEditMode) {
+      await sb.from('users_data').insert({
+        id: currentUser.id,
+        xp: 0, niveau: 1, hp: 100, streak: 0, streak_best: 0
+          });
+    }
 
     showLoading(isEditMode ? 'Profil mis à jour ! ✨' : "C'est parti ! ⚔️");
     setTimeout(() => { window.location.href = 'index.html?refresh=1'; }, 800);
