@@ -1551,25 +1551,9 @@ document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
     const wc=document.getElementById('editor-wc');
     if(!body) return;
 
-    // Restore — charge depuis Supabase puis applique, seulement si pas de page existante ouverte
-    async function restoreEditor(){
-      if(window._skipRestore) return;
-      // Si une page existante est ouverte, ne pas ecraser avec le brouillon
-      if(typeof window._currentPageId !== 'undefined' && window._currentPageId !== null) return;
-      if(window.sb && window.currentUser){
-        try {
-          const {data: row} = await window.sb.from('users_data')
-            .select('editor_draft').eq('id', window.currentUser.id).maybeSingle();
-          if(row && row.editor_draft !== null && row.editor_draft !== undefined){
-            lsSet('hz_editor', row.editor_draft);
-          }
-        } catch(e){ console.error('loadEditor error:', e); }
-      }
-      const saved=lsGet('hz_editor',{title:'',content:''});
-      title.value=saved.title||'';
-      if(saved.content){body.innerHTML=saved.content;setTimeout(initImgs,120);}
-    }
-    restoreEditor();
+    // Pas de restauration de brouillon — les pages sont dans users_pages
+    title.value = '';
+    body.innerHTML = '';
 
     // Save
     function save(){
