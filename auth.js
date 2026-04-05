@@ -65,6 +65,9 @@ window.supabaseSignOut = async function() {
   localStorage.removeItem('hz_mood');
   localStorage.removeItem('hz_pages');
   localStorage.removeItem('hz_ach');
+  localStorage.removeItem('hz_map_unlocked');
+  localStorage.removeItem('hz_hp');
+  localStorage.removeItem('hz_streak');
   await window.sb.auth.signOut();
   window.location.href = 'login.html';
 };
