@@ -4610,22 +4610,19 @@ loadCalEvents().then(evs=>{
   },200);
 
   // ── Reset task achievements (one-time clean slate) ──────────
-  (function resetTaskAch(){
-    if(!as || !as.unlocked) return;
-    if(as.tracking&&as.tracking._task_reset_v1) return;
-    var ids=['p1','p2','p3','p4','p5','p6','d1','d2','d4','d5'];
-    ids.forEach(function(id){ delete as.unlocked[id]; });
-    as.stats.tasks_done=0;
-    if(!as.tracking) as.tracking={};
-    as.tracking._task_reset_v1=true;
-    as.tracking.tasks_today=0;
-    as.tracking.tasks_today_date='';
-    as.unseen=Math.max(0,(as.unseen||0));
-    saveAS();
-  })();
+  // Moved to after loadAS() - see initAchievements()
 
   // ── Init ─────────────────────────────────────────────────
-  loadAS();
+  loadAS().then(() => {
+    if(!as.tracking||!as.tracking._task_reset_v1){
+      if(as.unlocked){var ids=['p1','p2','p3','p4','p5','p6','d1','d2','d4','d5'];ids.forEach(function(id){delete as.unlocked[id];});}
+      as.stats=as.stats||{};as.stats.tasks_done=0;
+      if(!as.tracking)as.tracking={};
+      as.tracking._task_reset_v1=true;as.tracking.tasks_today=0;as.tracking.tasks_today_date='';
+      as.unseen=Math.max(0,(as.unseen||0));saveAS();
+    }
+    onAppOpen();
+  });
   onAppOpen();
 
   // Post-init checks (wait for hpState + streak to be loaded)
