@@ -1574,12 +1574,15 @@ document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
       if(status) status.textContent='✎ Sauvegarde...';
       if(wc){const t=(body.innerText||'').trim();wc.textContent=(t?t.split(/\s+/).length:0)+' mots';}
       saveTimer=setTimeout(()=>{
-        const edDraft={title:title.value,content:body.innerHTML};
-        lsSet('hz_editor',edDraft);
-        if(window.sb && window.currentUser){
-          window.sb.from('users_data')
-            .upsert({id: window.currentUser.id, editor_draft: edDraft}, {onConflict: 'id'})
-            .then(({error})=>{ if(error) console.error('saveEditor error:', error); });
+        // Sauvegarder le brouillon seulement si pas de page existante ouverte
+        if(typeof currentPageId === 'undefined' || currentPageId === null){
+          const edDraft={title:title.value,content:body.innerHTML};
+          lsSet('hz_editor',edDraft);
+          if(window.sb && window.currentUser){
+            window.sb.from('users_data')
+              .upsert({id: window.currentUser.id, editor_draft: edDraft}, {onConflict: 'id'})
+              .then(({error})=>{ if(error) console.error('saveEditor error:', error); });
+          }
         }
         if(status){status.textContent='✓ Sauvegardé';setTimeout(()=>{status.textContent='';},1800);}
       },700);
