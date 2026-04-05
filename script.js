@@ -1026,6 +1026,7 @@ async function initApp() {
   try {
     // Load everything in order, waiting for each
     await loadMoodLog();
+    calEvents = await loadCalEvents().catch(()=>[]);
     await loadTrash();
     await loadHP();
     const [g, bg] = await Promise.all([
@@ -1985,8 +1986,29 @@ function saveCalEvents(){
       idbDel('calevimg_'+ev.id).catch(()=>{});
     }
   });
+  if(window.sb && window.currentUser) {
+    window.sb.from('users_calendar')
+      .upsert({ id: window.currentUser.id, data: lean, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+      .then(({error}) => { if(error) console.error('saveCalEvents error:', error); });
+  }
 }
 async function loadCalEvents(){
+  if(window.sb && window.currentUser) {
+    try {
+      const {data: row, error} = await window.sb.from('users_calendar').select('data').eq('id', window.currentUser.id).maybeSingle();
+      if(!error && row && row.data !== null && row.data !== undefined) {
+        const lean = row.data;
+        lsSet('hz_cal_events', lean);
+        if(!lean.length) return [];
+        return await Promise.all(lean.map(async e => {
+          const ev = {...e};
+          try { const imgs = await idbGet('calevimg_'+e.id); if(imgs) ev.images=imgs; } catch(_){}
+          if(!ev.images) ev.images = [];
+          return ev;
+        }));
+      }
+    } catch(e) { console.error('loadCalEvents error:', e); }
+  }
   const lean = lsGet('hz_cal_events', []);
   if(!lean.length) return [];
   try {
@@ -2528,10 +2550,6 @@ navigate = function(view){
 PAGE_TITLES['calendar'] = 'Calendrier';
 
 // ── INIT ─────────────────────────────────────────────────
-loadCalEvents().then(evs=>{
-  calEvents=evs;
-  if(currentView==='calendar') renderCalendar();
-});
 
 })(); // end CALENDAR MODULE
 
