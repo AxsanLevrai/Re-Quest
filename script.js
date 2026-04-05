@@ -2580,7 +2580,7 @@ loadCalEvents().then(evs=>{
   var pagesSaveTimer = null;
 
   // ── PERSISTENCE ────────────────────────────────────────
-  function loadPages(){
+  async function loadPages(){
     try {
       if(window.sb && window.currentUser) {
         const {data: row, error} = await window.sb.from('users_pages').select('data').eq('id', window.currentUser.id).single();
@@ -4206,7 +4206,7 @@ loadCalEvents().then(evs=>{
   const LS_KEY = 'hz_ach';
   let as = {}; // achievement state
 
-  function loadAS(){
+  async function loadAS(){
     try{
       if(window.sb && window.currentUser) {
         const {data: row, error} = await window.sb.from('users_achievements').select('data').eq('id', window.currentUser.id).single();
