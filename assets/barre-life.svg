@@ -1,0 +1,4 @@
+<svg viewBox="0 0 222 29" xmlns="http://www.w3.org/2000/svg">
+  <!-- Barre Life -->
+  <path id="barre-life" fill="#00FF00" opacity="0.7" d="M 75,9 L 75,21 L 207,21 L 216,9 Z" />
+</svg>

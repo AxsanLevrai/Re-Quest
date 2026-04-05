@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horizon — Suivi d'quêtes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="bg-layer"></div>
+<div id="bg-overlay"></div>
+
+<!-- MOOD POPUP -->
+<div class="overlay" id="mood-overlay">
+  <div class="mood-popup-box">
+    <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:10px">Check-in quotidien</div>
+    <div style="font-family:'Playfair Display',serif;font-size:24px;color:var(--snow);margin-bottom:4px">Comment tu te sens aujourd'hui ?</div>
+    <div style="font-size:13px;color:var(--mist);margin-bottom:28px">Par rapport à tes quêtes en général</div>
+    <div class="mood-row" id="mood-popup-btns" style="margin-bottom:24px"></div>
+    <div id="mood-popup-sel" style="font-size:14px;color:var(--mist);min-height:20px;margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn-ghost" id="mood-skip-btn">Plus tard</button>
+      <button class="btn-primary" id="mood-save-btn" disabled style="opacity:0.4">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATE -->
+<div id="cel-overlay" style="display:none;position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden"></div>
+<div class="overlay" id="cel-modal" style="z-index:10000">
+  <div class="celebrate-box">
+    <div class="cel-header">
+      <div class="cel-title-banner">Félicitation</div>
+      <div class="cel-icon-wrap" id="cel-icon"></div>
+      <div class="cel-quest-name" id="cel-title"></div>
+      <div class="cel-quest-done">terminée.</div>
+    </div>
+    <div class="cel-divider"></div>
+    <div class="cel-btn-row">
+      <div style="position:relative;padding-bottom:24px">
+        <button class="cel-btn-circle cel-btn-blue cel-close-btn" id="cel-close-btn" title="Continuer">
+          <svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13" cy="13" r="10" stroke-width="2" opacity="0.4"/>
+            <polyline points="8,13 12,17 18,9"/>
+          </svg>
+        </button>
+        <span class="cel-btn-label">Continuer</span>
+      </div>
+      <div style="position:relative;padding-bottom:24px">
+        <button class="cel-btn-circle cel-btn-red cel-close-btn" title="Fermer">
+          <svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="13" cy="13" r="10" stroke-width="2" opacity="0.4"/>
+            <line x1="9" y1="9" x2="17" y2="17"/>
+            <line x1="17" y1="9" x2="9" y2="17"/>
+          </svg>
+        </button>
+        <span class="cel-btn-label">Fermer</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="goal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="goal-modal-title">Nouvelle quête</div>
+    <div class="form-group"><label class="form-label">Nom de la quête *</label><input class="form-input" id="f-name" placeholder="ex: Vivre de YouTube"></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="f-desc" rows="2" style="resize:vertical" placeholder="Pourquoi cet quête..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Categorie</label>
+        <select class="form-input" id="f-cat"><option>Personnel</option><option>Projets</option><option>Carriere</option><option>Apprentissage</option><option>Sport</option><option>Creatif</option><option>Voyage</option><option>Social</option><option>Bien-etre</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Date limite</label><input class="form-input" type="date" id="f-deadline"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Progression</label>
+      <div style="display:flex;align-items:center;gap:13px"><input type="range" id="f-prog" min="0" max="100" value="0" step="1" style="flex:1;accent-color:var(--accent)"><span id="f-prog-val" style="font-size:15px;font-weight:600;color:var(--accent);min-width:34px;text-align:right">0%</span></div>
+    </div>
+    <div class="form-group"><label class="form-label">Priorite</label>
+      <div class="prio-row" id="f-prio-row">
+        <button class="prio-btn prio-low" data-prio="low">Basse</button>
+        <button class="prio-btn prio-med on" data-prio="med">Moyenne</button>
+        <button class="prio-btn prio-high" data-prio="high">Haute</button>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Icone</label><div class="icon-grid" id="f-icons"></div></div>
+    <div class="form-group"><label class="form-label">Couleur</label><div class="color-row" id="f-colors"></div></div>
+    <div class="form-group"><label class="form-label">Etapes</label>
+      <div class="m-editor" id="f-milestones"></div>
+      <div class="add-m-row"><input class="add-m-input" id="f-new-m" placeholder="Nouvelle etape... (Entree)"><button class="btn-sm" id="f-add-m-btn">+ Ajouter</button></div>
+    </div>
+    <div class="form-group"><label class="form-label">Pieces jointes</label>
+      <div class="upload-zone" id="f-upload-zone"><div class="upload-zone-text">Glisser ou <span>cliquer pour importer</span></div><div style="font-size:11px;color:var(--fog);margin-top:4px">Max 10 Mo</div></div>
+      <input type="file" id="f-file-input" multiple style="display:none">
+      <div class="file-list" id="f-file-list"></div>
+    </div>
+    <div class="modal-footer"><button class="btn-ghost" id="goal-cancel-btn">Annuler</button><button class="btn-primary" id="goal-save-btn">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- LOG MODAL -->
+<div class="overlay" id="log-overlay">
+  <div class="modal" style="width:430px">
+    <div class="modal-title">Journal de progression</div>
+    <div id="log-goal-name" style="font-size:14px;color:var(--mist);margin-bottom:16px"></div>
+    <div class="log-list" id="log-list"></div>
+    <div class="form-group"><label class="form-label">Nouvelle note</label><textarea class="form-input" id="log-note" rows="2" placeholder="Qu'avez-vous accompli ?"></textarea></div>
+    <div class="form-group"><label class="form-label">Progression</label>
+      <div style="display:flex;align-items:center;gap:13px"><input type="range" id="log-prog" min="0" max="100" value="0" step="1" style="flex:1;accent-color:var(--accent)"><span id="log-prog-val" style="font-size:15px;font-weight:600;color:var(--accent);min-width:34px;text-align:right">0%</span></div>
+    </div>
+    <div class="modal-footer"><button class="btn-ghost" id="log-cancel-btn">Fermer</button><button class="btn-primary" id="log-save-btn">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- VIEWER MODAL -->
+<div class="overlay" id="viewer-overlay">
+  <div class="modal" style="width:440px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span id="viewer-icon" style="font-size:20px"></span>
+      <div style="font-size:16px;font-weight:500;color:var(--snow);flex:1" id="viewer-title"></div>
+      <button class="btn-ghost" id="viewer-close-btn" style="padding:6px 12px">X</button>
+    </div>
+    <div id="viewer-list"></div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
+      <button class="btn-sm" id="viewer-add-btn" style="width:100%;text-align:center">+ Ajouter des fichiers</button>
+      <input type="file" id="viewer-file-input" multiple style="display:none">
+    </div>
+  </div>
+</div>
+
+<!-- BG MODAL -->
+<div class="overlay" id="bg-overlay-modal">
+  <div class="modal" style="width:440px">
+    <div class="modal-title">Image de fond</div>
+    <div class="bg-preview" id="bg-preview"><span style="font-size:12px;color:var(--fog)" id="bg-preview-lbl">Aucun fond</span></div>
+    <div class="form-group"><label class="form-label">Prereglages</label><div class="bg-presets" id="bg-presets"></div></div>
+    <div class="form-group"><label class="form-label">Votre image</label>
+      <div class="upload-zone" id="bg-upload-zone" style="padding:12px"><div class="upload-zone-text">Cliquez pour choisir</div></div>
+      <input type="file" id="bg-file-input" accept="image/*" style="display:none">
+    </div>
+    <div class="form-group"><label class="form-label">Opacite du voile</label>
+      <div style="display:flex;align-items:center;gap:13px"><input type="range" id="bg-opacity" min="0" max="98" value="82" step="1" style="flex:1;accent-color:var(--accent)"><span id="bg-opacity-val" style="font-size:13px;color:var(--accent);min-width:34px;text-align:right">82%</span></div>
+    </div>
+    <div class="form-group"><label class="form-label">Flou du fond</label>
+      <div style="display:flex;align-items:center;gap:13px"><input type="range" id="bg-blur" min="0" max="20" value="0" step="1" style="flex:1;accent-color:var(--accent)"><span id="bg-blur-val" style="font-size:13px;color:var(--accent);min-width:34px;text-align:right">0px</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="bg-remove-btn">Supprimer</button>
+      <button class="btn-ghost" id="bg-cancel-btn">Annuler</button>
+      <button class="btn-primary" id="bg-save-btn">Appliquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- COLOR PICKER MODAL -->
+<div class="overlay" id="color-overlay">
+  <div class="modal" style="width:380px">
+    <div class="modal-title">Couleur néon</div>
+    <div style="font-size:13px;color:var(--mist);margin-bottom:20px">Choisissez la couleur d'accent de l'interface</div>
+    <div id="neon-colors" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px"></div>
+    <div class="form-group">
+      <label class="form-label">Couleur personnalisée</label>
+      <div style="display:flex;align-items:center;gap:12px">
+        <input type="color" id="custom-color" style="width:48px;height:40px;border:1px solid rgba(0,245,255,0.2);border-radius:4px;background:none;cursor:pointer;padding:2px">
+        <span id="custom-color-val" style="font-size:13px;color:var(--mist);font-family:monospace">#00f5ff</span>
+        <button class="btn-sm" id="apply-custom-color">Appliquer</button>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(0,245,255,0.1)">
+      <div style="font-size:11px;color:var(--fog);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Aperçu</div>
+      <div id="color-preview" style="background:rgba(8,6,20,0.95);border:1px solid var(--accent);border-radius:2px;padding:14px 18px;display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;border-radius:2px;background:rgba(0,245,255,0.08);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px">🎯</div>
+        <div>
+          <div style="font-size:14px;color:var(--accent);text-shadow:0 0 8px var(--accent);letter-spacing:1px">Horizon</div>
+          <div style="font-size:11px;color:var(--fog)">Aperçu de la couleur</div>
+        </div>
+        <div style="margin-left:auto;font-size:20px;font-weight:300;color:var(--accent);text-shadow:0 0 10px var(--accent);font-family:monospace" id="preview-pct">65%</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="color-cancel-btn">Annuler</button>
+      <button class="btn-primary" id="color-save-btn">Appliquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MUSIC PLAYER -->
+<div id="music-player">
+  <div class="player-bar" id="player-bar">
+    <button class="player-btn" id="player-play-btn" style="color:var(--accent)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><polygon points="2,1 13,7 2,13"/></svg>
+    </button>
+    <div class="player-info" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <div class="player-title" id="player-title">Beats with Hooks</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="music-time" id="music-cur">0:00</span>
+        <div class="music-progress-track" id="music-progress-track" style="flex:1">
+          <div class="music-progress-fill" id="music-progress-fill" style="width:0%"></div>
+        </div>
+        <span class="music-time" id="music-dur">0:00</span>
+      </div>
+    </div>
+    <div class="player-controls" onclick="event.stopPropagation()">
+      <button class="player-btn" id="btn-prev-track" title="Chanson precedente">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="currentColor"><rect x="1" y="1" width="2.5" height="12" rx="1"/><polygon points="14,1 4.5,7 14,13"/></svg>
+      </button>
+      <button class="player-btn" id="btn-next-track" title="Chanson suivante">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="currentColor"><rect x="12.5" y="1" width="2.5" height="12" rx="1"/><polygon points="2,1 11.5,7 2,13"/></svg>
+      </button>
+      <div class="player-sep"></div>
+      <button class="player-btn" id="btn-prev-pl" title="Playlist precedente">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="currentColor"><rect x="1" y="1" width="2.5" height="12" rx="1"/><polygon points="16,1 6,7 16,13"/><polygon points="8,1 1,7 8,13" opacity="0.45"/></svg>
+      </button>
+      <button class="player-btn" id="btn-shuffle" title="Aleatoire">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h3l8 8h4M1 11h3l2.5-2.5M13 3h4v3M13 11h4v-3"/></svg>
+      </button>
+      <button class="player-btn" id="btn-next-pl" title="Playlist suivante">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="currentColor"><rect x="14.5" y="1" width="2.5" height="12" rx="1"/><polygon points="2,1 12,7 2,13"/><polygon points="10,1 17,7 10,13" opacity="0.45"/></svg>
+      </button>
+      <div class="player-sep"></div>
+      <div class="player-vol">
+        <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 4h2.5L7 1.5v9L3.5 8H1z" fill="currentColor" stroke="none"/><path d="M9 2.5a4 4 0 010 7M11 1a6.5 6.5 0 010 10" opacity="0.6"/></svg>
+        <input type="range" id="player-vol" min="0" max="100" value="70" step="1">
+        <span class="player-vol-val" id="player-vol-val">70%</span>
+      </div>
+      <button class="player-btn" id="btn-expand">
+        <svg id="expand-icon" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1,1 6,7 11,1"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="playlist-sel" id="playlist-sel"></div>
+  <iframe id="sc-frame" class="sc-frame" allow="autoplay" scrolling="no"></iframe>
+</div>
+
+
+<!-- PAGE TYPE PICKER OVERLAY -->
+<div class="overlay" id="page-type-overlay">
+  <div class="page-type-box">
+    <div class="page-type-heading">Choisir le type de page</div>
+    <div class="page-type-sub">S&#233;lectionnez comment vous souhaitez organiser vos id&#233;es</div>
+    <div class="page-type-grid">
+      <div class="page-type-card" id="ptype-blank">
+        <div class="page-type-icon">&#128196;</div>
+        <div class="page-type-name">Page vierge</div>
+        <div class="page-type-desc">&#201;diteur de texte riche avec mise en forme compl&#232;te, images et tableaux</div>
+      </div>
+      <div class="page-type-card" id="ptype-mindmap">
+        <div class="page-type-icon">&#129504;</div>
+        <div class="page-type-name">Mind Map</div>
+        <div class="page-type-desc">Carte mentale interactive avec n&#339;uds, connexions et personnalisation visuelle</div>
+      </div>
+      <div class="page-type-card" id="ptype-todo">
+        <div class="page-type-icon">&#9989;</div>
+        <div class="page-type-name">To Do List</div>
+        <div class="page-type-desc">Listes de t&#226;ches avec cases &#224; cocher, priorit&#233;s et dates d&#233;ch&#233;ance</div>
+      </div>
+    </div>
+    <button class="btn-ghost" id="ptype-cancel" style="margin:0 auto;display:block">Annuler</button>
+  </div>
+</div>
+
+<!-- TRASH MODAL -->
+<div class="overlay" id="trash-overlay">
+  <div class="modal" style="width:560px;max-width:96vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-shrink:0">
+      <span style="font-size:24px">🗑</span>
+      <div class="modal-title" style="margin:0;flex:1">Corbeille</div>
+      <button class="btn-ghost" id="trash-close-btn" style="padding:6px 13px;font-size:13px">✕</button>
+    </div>
+    <div id="trash-toolbar" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 14px;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.1);border-radius:2px;flex-shrink:0;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;font-size:12px;color:var(--mist)">
+        <input type="checkbox" id="trash-sel-all" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer"> Tout sélectionner
+      </label>
+      <span id="trash-sel-lbl" style="font-size:12px;color:var(--fog);min-width:70px"></span>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button id="trash-restore-btn" class="btn-ghost" style="display:none;color:var(--accent);border-color:rgba(0,245,255,0.3);font-size:12px;padding:6px 13px;letter-spacing:0.3px">↩ Restaurer</button>
+        <button id="trash-perm-btn" class="btn-ghost" style="display:none;color:var(--red);border-color:rgba(255,45,107,0.3);font-size:12px;padding:6px 13px;letter-spacing:0.3px">🗑 Définitif</button>
+      </div>
+    </div>
+    <div id="trash-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:4px;min-height:0"></div>
+    <div id="trash-empty" style="text-align:center;padding:48px 20px;color:var(--fog);display:none">
+      <div style="font-size:40px;margin-bottom:12px;filter:opacity(0.5)">🎉</div>
+      <div style="font-size:14px;color:var(--mist);font-family:'Playfair Display',serif">Corbeille vide</div>
+      <div style="font-size:12px;color:var(--fog);margin-top:6px">Aucune quête supprimée</div>
+    </div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="shell" id="app-shell" style="opacity:0;pointer-events:none">
+  <nav class="sidebar">
+    <!-- HP BAR WIDGET -->
+    <div class="hp-widget" id="hp-widget">
+      <div class="hp-bar-frame">
+        <img src="assets/hp_bar_vide.png" class="hp-bg-img" alt="HP Bar">
+        <svg class="hp-bar-svg" viewBox="0 0 222 29" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <defs>
+            <clipPath id="hp-clip-path">
+              <rect id="hp-clip-rect" x="75" y="0" width="141" height="29"/>
+            </clipPath>
+          </defs>
+          <!-- Player name in left zone -->
+          <text x="38" y="17" text-anchor="middle" dominant-baseline="middle"
+                fill="#00f5ff" font-family="Outfit,sans-serif" font-size="11"
+                font-weight="700" letter-spacing="2"
+                style="pointer-events:none;user-select:none;filter:drop-shadow(0 0 3px #00f5ff) drop-shadow(0 0 6px rgba(0,245,255,0.6))">AXSAN</text>
+          <!-- Glow layer -->
+          <path id="hp-bar-glow"
+                d="M 75,9 L 75,21 L 207,21 L 216,9 Z"
+                fill="#00ff66" opacity="0.35"
+                clip-path="url(#hp-clip-path)"/>
+          <!-- Main fill -->
+          <path id="hp-bar-fill"
+                d="M 75,9 L 75,21 L 207,21 L 216,9 Z"
+                fill="#00ff66" opacity="0.9"
+                clip-path="url(#hp-clip-path)"/>
+        </svg>
+      </div>
+      <div class="hp-info-row">
+        <span class="hp-label">PV</span>
+        <span class="hp-val-display">
+          <span id="hp-val">100</span>
+          <span class="hp-sep">/</span>
+          <span class="hp-max">100</span>
+        </span>
+        <span class="hp-status" id="hp-status">●</span>
+      </div>
+    </div>
+    <!-- ACCUEIL -->
+    <div class="nav-item nav-accueil-item" data-view="accueil" id="nav-accueil">&#127968; Accueil</div>
+
+    <div class="sidebar-scroll">
+      <div class="nav-section" id="section-vues">
+        <div class="nav-label" id="label-vues">Vues <span class="nav-label-arrow">▼</span></div>
+        <div class="nav-section-content">
+          <div class="nav-item" data-view="goals">&#10022; Toutes mes quêtes <span class="nav-badge" id="badge-all">0</span></div>
+          <div class="nav-item" data-view="stats">&#9678; Statistiques</div>
+          <div class="nav-item" data-view="timeline">&#10792; Chronologie</div>
+          <div class="nav-item" data-view="calendar">&#9635; Calendrier</div>
+          <div class="nav-item" data-view="mood">&#9689; Mon Humeur</div>
+          <div class="nav-item" data-view="map">&#9784; Carte des Zones</div>
+          <div class="nav-item" data-view="achievements" id="nav-ach">🏆 Succès <span class="nav-badge" id="badge-ach" style="background:rgba(232,201,106,0.12);color:#e8c96a;display:none"></span></div>
+        </div>
+      </div>
+      <div class="nav-section" id="section-pages">
+        <div class="nav-label" id="label-pages">Mes Pages <span class="nav-label-arrow">&#9660;</span></div>
+        <div class="nav-section-content">
+          <div class="nav-item" id="nav-new-page">&#9998; Nouvelle page</div>
+          <div id="pages-nav"></div>
+        </div>
+      </div>
+
+      <div class="nav-label" id="label-params" data-view="params" style="cursor:pointer">Paramètres</div>
+    </div>
+    <div class="sb-bottom">
+      <span id="sb-done" style="display:none"></span>
+      <span id="sb-steps" style="display:none"></span>
+      <span id="sb-pct" style="display:none"></span>
+      <span id="sb-ring" style="display:none"></span>
+    </div>
+    <!-- QUIT BUTTON -->
+    <div class="sidebar-quit-btn" id="sidebar-quit-btn">
+      <span class="quit-icon">⏻</span>
+      <span>Quitter</span>
+    </div>
+    <!-- STREAK WIDGET -->
+    <div class="streak-wrap" id="streak-wrap">
+      <div class="streak-row">
+        <div class="streak-flame">
+          <span class="streak-fire" id="streak-fire">🔥</span>
+          <div>
+            <div class="streak-count" id="streak-count">0</div>
+            <div class="streak-label">jours de suite</div>
+          </div>
+        </div>
+        <span id="streak-best" style="display:none"></span>
+      </div>
+      <div class="streak-dots" id="streak-dots"></div>
+    </div>
+    <!-- hidden XP state anchors (non-visible, used by JS) -->
+    <span id="xp-lvl" style="display:none">1</span>
+    <span id="xp-title" style="display:none">Novice</span>
+    <span id="xp-total" style="display:none">0 XP</span>
+    <span id="xp-next" style="display:none"></span>
+    <span id="xp-fill" style="display:none"></span>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="sidebar-toggle" title="Masquer/Afficher le menu" style="background:none;border:1px solid rgba(0,245,255,0.2);border-radius:4px;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s">
+          <svg id="toggle-icon" viewBox="0 0 16 16" fill="none" stroke="rgba(0,245,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="15" height="15">
+            <rect x="1" y="1" width="14" height="14" rx="2"/>
+            <line x1="5" y1="1" x2="5" y2="15"/>
+          </svg>
+        </button>
+        <div class="page-title" id="page-title">Toutes mes quêtes</div>
+        <div id="map-topbar-sub" style="display:none;font-size:11px;color:var(--fog);margin-top:2px;letter-spacing:0.5px">0/9 zones déverrouillées</div>
+      </div>
+      <!-- XP BANNER -->
+      <div class="xp-banner" id="xp-banner" title="Barre d'expérience">
+        <div class="xp-banner-lvl" id="xp-banner-lvl">1</div>
+        <div class="xp-banner-body">
+          <div class="xp-banner-row">
+            <span class="xp-banner-title" id="xp-banner-title">Novice</span>
+            <span class="xp-banner-xp" id="xp-banner-xp">0 XP</span>
+          </div>
+          <div class="xp-banner-track"><div class="xp-banner-fill" id="xp-banner-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-wrap">
+          <span class="search-ico">&#128269;</span>
+          <input class="search-input" id="search-input" placeholder="Rechercher...">
+        </div>
+        <div style="display:flex;gap:2px;background:var(--night3);border-radius:8px;padding:3px;border:1px solid rgba(255,255,255,0.07)">
+          <button class="btn-bg size-btn" data-size="small" title="Petites cartes" style="padding:4px 10px;font-size:12px">S</button>
+          <button class="btn-bg size-btn" data-size="normal" title="Cartes normales" style="padding:4px 10px;font-size:12px">M</button>
+          <button class="btn-bg size-btn" data-size="large" title="Grandes cartes" style="padding:4px 10px;font-size:12px">L</button>
+        </div>
+        <button class="btn-primary" id="btn-new">+ Nouvelle quête</button>
+      </div>
+    </div>
+    <div class="content">
+      <!-- ══ ACCUEIL VIEW ══════════════════════════════════════ -->
+      <div class="view active" id="view-accueil">
+        <div class="accueil-wrap">
+          <div class="accueil-hero">
+            <div class="accueil-greeting" id="accueil-greeting">Bonjour ☀️</div>
+            <div class="accueil-title">Bienvenue sur <span>Horizon</span></div>
+            <div class="accueil-sub" id="accueil-sub">Ton tableau de bord personnel pour suivre quêtes, objectifs et humeur.</div>
+            <div class="accueil-stats-row" id="accueil-stats-row"></div>
+          </div>
+          <div class="accueil-section-label">Raccourcis</div>
+          <div class="accueil-grid" id="accueil-grid"></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-goals">
+        <div class="filter-bar">
+          <button class="filter-chip active" data-filter="all">Tous</button>
+          <button class="filter-chip" data-filter="active">En cours</button>
+          <button class="filter-chip" data-filter="done">Quêtes terminées</button>
+          <button class="filter-chip" data-filter="urgent">Urgents</button>
+          <div id="cat-filter-wrap" style="position:relative;display:inline-flex">
+            <button class="filter-chip" id="cat-filter-btn" style="display:flex;align-items:center;gap:5px">Catégorie <span id="cat-filter-arrow" style="font-size:10px;transition:transform 0.2s">▾</span></button>
+            <div id="cat-filter-dd" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:rgba(8,6,20,0.98);border:1px solid rgba(0,245,255,0.22);border-radius:4px;z-index:300;min-width:170px;padding:4px 0;box-shadow:0 8px 28px rgba(0,0,0,0.7);backdrop-filter:blur(12px)"></div>
+          </div>
+        </div>
+        <div class="goals-grid" id="goals-grid"></div>
+      </div>
+      <div class="view" id="view-stats">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-card-label">Quêtes terminées</div><div class="stat-card-value" id="st-done">0</div><div class="stat-card-sub" id="st-done-sub"></div></div>
+          <div class="stat-card"><div class="stat-card-label">Etapes</div><div class="stat-card-value" id="st-steps">0</div><div class="stat-card-sub" id="st-steps-sub"></div></div>
+          <div class="stat-card"><div class="stat-card-label">Jours de suivi</div><div class="stat-card-value" id="st-days">0</div><div class="stat-card-sub">depuis le debut</div></div>
+          <div class="stat-card"><div class="stat-card-label">Progression</div><div class="stat-card-value" id="st-pct">0%</div><div class="stat-card-sub">moyenne</div></div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card"><div class="chart-card-title">Par categorie</div><div class="chart-card-sub">Repartition</div><div class="chart-wrap"><canvas id="cat-chart"></canvas></div></div>
+          <div class="chart-card"><div class="chart-card-title">Progression</div><div class="chart-card-sub">Par quête</div><div class="chart-wrap" id="prog-chart-wrap"><canvas id="prog-chart"></canvas></div></div>
+        </div>
+        <div class="chart-card"><div class="chart-card-title">Activite</div><div class="chart-card-sub">Entrees journal</div><div class="chart-wrap"><canvas id="act-chart"></canvas></div></div>
+      </div>
+      <div class="view" id="view-timeline">
+        <div class="chart-card"><div class="chart-card-title">Chronologie</div><div class="chart-card-sub">Par echeance</div><div class="timeline" id="tl-content" style="margin-top:22px"></div></div>
+      </div>
+
+      <!-- ══ CALENDAR VIEW ══════════════════════════════════════ -->
+      <div class="view" id="view-calendar">
+        <div class="cal-bg-wrap"><div class="cal-shell">
+          <!-- TOPBAR -->
+          <div class="cal-topbar">
+            <div class="cal-nav">
+              <button class="cal-nav-btn" id="cal-prev">&#8249;</button>
+              <div class="cal-title" id="cal-title">—</div>
+              <button class="cal-nav-btn" id="cal-next">&#8250;</button>
+              <button class="cal-today-btn" id="cal-today-btn">Aujourd'hui</button>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <button class="btn-primary" id="cal-new-ev-btn" style="font-size:11px;padding:7px 14px">+ Évènement</button>
+              <div class="cal-view-switch">
+                <button class="cal-vsw-btn active" data-calview="month">Mois</button>
+                <button class="cal-vsw-btn" data-calview="week">Semaine</button>
+                <button class="cal-vsw-btn" data-calview="day">Jour</button>
+              </div>
+            </div>
+          </div>
+          <!-- CALENDAR BODY -->
+          <div id="cal-body"></div>
+        </div></div>
+      </div>
+
+      <div class="view" id="view-mood">
+        <div class="mood-hero">
+          <div class="mood-hero-title">Comment tu te sens aujourd'hui ?</div>
+          <div class="mood-hero-sub" id="mood-today-txt">Pas encore enregistre aujourd'hui</div>
+          <div class="mood-row" id="mood-view-btns"></div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card"><div class="chart-card-title">Humeur 30 jours</div><div class="chart-card-sub">Evolution</div><div class="chart-wrap" style="height:200px"><canvas id="mood-line-chart"></canvas></div></div>
+          <div class="chart-card"><div class="chart-card-title">Repartition</div><div class="chart-card-sub">Toutes tes emotions</div><div style="position:relative;width:100%;height:200px"><canvas id="mood-donut-chart"></canvas></div></div>
+        </div>
+        <div class="chart-card"><div class="chart-card-title">Historique</div><div class="chart-card-sub">30 dernieres entrees</div><div id="mood-hist-list" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div></div>
+      </div>
+
+      <!-- ══ MAP VIEW ══════════════════════════════════════════ -->
+      <div class="view" id="view-map">
+        <!-- Left: map canvas -->
+        <div class="map-area">
+          <div class="map-frame" id="map-frame">
+            <!-- Background map image -->
+<img class="map-bg-img" src="assets/Web_Map.jpg" alt="World Map">
+            <!-- SVG zones overlay — preserveAspectRatio=none so it stretches identically to the img -->
+            <div class="map-svg-overlay" id="map-svg-overlay">
+              <svg viewBox="0 0 1004 754" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <!-- Projets -->
+  <path id="Projets" class="inactive" fill="rgba(80,80,80,0.5)" d="M 141,37 L 141,37 L 127,51 L 120,73 L 116,83 L 108,97 L 104,111 L 91,126 L 79,150 L 70,163 L 74,175 L 64,185 L 60,200 L 61,213 L 63,228 L 79,238 L 78,250 L 91,256 L 96,271 L 109,283 L 116,295 L 131,295 L 148,308 L 173,305 L 194,284 L 204,267 L 225,266 L 244,254 L 260,254 L 282,258 L 294,264 L 312,257 L 313,234 L 315,215 L 331,199 L 342,183 L 344,167 L 336,157 L 327,142 L 316,131 L 315,115 L 319,97 L 329,85 L 332,67 L 327,50 L 308,53 L 292,43 L 280,42 L 266,39 L 258,29 L 249,38 L 240,29 L 227,26 L 213,31 L 201,24 L 192,31 L 182,25 L 160,32 Z" />
+  <!-- Créatif -->
+  <path id="Creatif" class="inactive" fill="rgba(80,80,80,0.5)" d="M 332,52 L 332,52 L 337,71 L 335,88 L 322,109 L 321,122 L 335,138 L 344,154 L 351,169 L 353,185 L 345,194 L 336,203 L 349,214 L 370,220 L 392,216 L 403,205 L 419,200 L 428,198 L 428,198 L 421,217 L 418,232 L 418,245 L 422,261 L 436,256 L 448,244 L 464,242 L 483,237 L 499,240 L 509,228 L 527,214 L 547,207 L 555,192 L 553,174 L 548,158 L 548,146 L 558,137 L 573,121 L 583,113 L 573,108 L 574,97 L 573,83 L 572,68 L 562,63 L 561,53 L 550,55 L 536,41 L 526,48 L 516,41 L 502,42 L 493,38 L 481,42 L 466,37 L 456,45 L 436,39 L 428,46 L 428,46 L 413,41 L 405,48 L 393,57 L 384,67 L 370,60 L 361,48 L 348,49 Z" />
+  <!-- Sport -->
+  <path id="Sport" class="inactive" fill="rgba(80,80,80,0.5)" d="M 587,118 L 587,118 L 582,133 L 569,142 L 554,150 L 558,167 L 562,183 L 562,195 L 555,209 L 542,217 L 524,226 L 522,235 L 547,241 L 555,245 L 566,255 L 575,276 L 591,294 L 605,305 L 619,309 L 631,314 L 630,337 L 642,338 L 630,337 L 660,335 L 675,325 L 690,310 L 710,311 L 733,310 L 754,296 L 768,296 L 781,302 L 794,318 L 819,324 L 839,314 L 855,312 L 871,315 L 884,318 L 888,304 L 898,294 L 908,300 L 918,282 L 934,282 L 932,270 L 934,258 L 927,246 L 932,237 L 926,221 L 917,209 L 897,194 L 882,190 L 884,172 L 888,153 L 876,145 L 861,128 L 861,112 L 844,100 L 828,105 L 806,98 L 801,108 L 789,106 L 778,111 L 772,120 L 761,115 L 759,131 L 739,134 L 737,146 L 732,154 L 732,169 L 719,174 L 708,173 L 698,184 L 688,177 L 677,181 L 672,172 L 661,177 L 647,177 L 639,167 L 633,155 L 630,137 L 616,130 L 611,121 Z" />
+  <!-- Apprentissage -->
+  <path id="Apprentissage" class="inactive" fill="rgba(80,80,80,0.5)" d="M 145,315 L 145,315 L 160,326 L 168,337 L 178,351 L 172,368 L 156,378 L 149,389 L 150,400 L 148,411 L 138,426 L 147,438 L 160,449 L 169,460 L 186,467 L 202,461 L 220,458 L 241,466 L 260,473 L 276,481 L 292,489 L 312,485 L 343,481 L 355,466 L 379,451 L 399,434 L 400,417 L 410,399 L 417,378 L 411,345 L 402,327 L 409,301 L 427,282 L 420,267 L 409,251 L 408,233 L 421,213 L 416,205 L 402,210 L 386,227 L 386,227 L 375,226 L 359,225 L 346,222 L 333,210 L 321,221 L 321,241 L 317,253 L 305,267 L 289,269 L 270,264 L 253,262 L 235,267 L 212,273 L 207,282 L 189,298 L 171,310 Z" />
+  <!-- Personnel -->
+  <path id="Personnel" class="inactive" fill="rgba(80,80,80,0.5)" d="M 454,250 L 454,250 L 440,269 L 438,289 L 428,300 L 415,315 L 421,337 L 430,361 L 431,382 L 421,398 L 410,422 L 409,445 L 429,451 L 449,463 L 464,471 L 485,447 L 505,443 L 515,459 L 525,454 L 544,446 L 566,441 L 586,443 L 595,421 L 598,400 L 614,400 L 617,360 L 623,324 L 598,314 L 581,297 L 565,279 L 554,249 L 525,240 L 509,239 L 502,248 L 472,243 Z" />
+  <!-- Voyage -->
+  <path id="Voyage" class="inactive" fill="rgba(80,80,80,0.5)" d="M 626,342 L 626,342 L 631,369 L 627,396 L 648,411 L 664,432 L 676,440 L 690,440 L 710,443 L 731,457 L 744,441 L 757,444 L 770,466 L 761,479 L 758,495 L 778,501 L 784,518 L 798,500 L 813,508 L 818,530 L 834,533 L 859,529 L 871,515 L 892,514 L 910,506 L 930,499 L 941,505 L 964,489 L 979,464 L 984,446 L 981,437 L 965,427 L 947,420 L 928,419 L 914,419 L 901,411 L 892,405 L 891,396 L 884,384 L 884,375 L 884,363 L 881,349 L 886,337 L 873,327 L 861,322 L 848,322 L 833,330 L 819,332 L 803,333 L 793,329 L 777,324 L 772,314 L 763,303 L 753,313 L 740,321 L 724,317 L 699,314 L 690,324 L 675,336 L 662,347 L 642,347 Z" />
+  <!-- Carriere -->
+  <path id="Carriere" class="inactive" fill="rgba(80,80,80,0.5)" d="M 139,444 L 139,444 L 134,457 L 137,467 L 129,475 L 138,483 L 130,490 L 134,513 L 137,529 L 131,533 L 129,542 L 133,552 L 134,561 L 143,577 L 152,580 L 168,575 L 171,588 L 170,601 L 177,619 L 177,619 L 169,626 L 169,641 L 175,656 L 170,666 L 170,680 L 183,690 L 200,690 L 206,680 L 214,672 L 218,672 L 230,665 L 237,656 L 251,652 L 258,649 L 263,660 L 276,666 L 292,666 L 303,661 L 315,656 L 323,648 L 330,641 L 332,626 L 339,617 L 344,604 L 343,594 L 332,586 L 319,586 L 314,591 L 302,582 L 297,588 L 289,584 L 292,578 L 292,573 L 287,571 L 295,556 L 290,553 L 298,547 L 300,542 L 299,534 L 309,519 L 308,518 L 295,505 L 291,505 L 289,494 L 282,495 L 266,488 L 259,493 L 252,488 L 246,481 L 240,471 L 230,471 L 221,471 L 212,467 L 203,472 L 195,474 L 182,472 L 178,477 L 172,471 L 158,458 L 151,457 Z" />
+  <!-- Bien-etre -->
+  <path id="Bien-etre" class="inactive" fill="rgba(80,80,80,0.5)" d="M 398,455 L 398,455 L 372,468 L 354,476 L 341,485 L 325,493 L 308,498 L 317,515 L 313,526 L 307,543 L 304,559 L 313,571 L 328,580 L 348,585 L 358,591 L 365,601 L 382,598 L 391,609 L 402,598 L 418,591 L 424,577 L 432,570 L 435,582 L 432,596 L 424,614 L 427,631 L 436,643 L 453,647 L 474,646 L 493,638 L 514,651 L 493,638 L 529,660 L 546,661 L 562,653 L 577,649 L 582,662 L 594,662 L 597,643 L 589,624 L 580,607 L 577,589 L 561,582 L 549,571 L 558,557 L 557,539 L 553,528 L 539,521 L 534,512 L 533,502 L 530,486 L 514,477 L 508,465 L 503,452 L 496,449 L 487,458 L 483,474 L 473,484 L 462,483 L 446,477 L 435,466 L 427,457 L 412,453 Z" />
+  <!-- Social -->
+  <path id="Social" class="inactive" fill="rgba(80,80,80,0.5)" d="M 592,449 L 592,449 L 556,453 L 531,458 L 522,468 L 538,478 L 548,491 L 548,507 L 564,523 L 564,542 L 565,568 L 582,578 L 590,599 L 599,628 L 611,657 L 631,649 L 644,641 L 659,641 L 674,646 L 692,645 L 707,645 L 734,628 L 744,608 L 760,592 L 774,595 L 786,586 L 799,575 L 810,566 L 817,560 L 815,532 L 806,506 L 787,517 L 773,519 L 769,505 L 753,504 L 751,486 L 759,469 L 749,450 L 733,466 L 711,453 L 699,452 L 670,447 L 653,432 L 636,417 L 620,405 L 609,408 L 601,427 L 595,444 Z" />
+
+
+              <!-- Zone progress labels -->
+              <g id="map-labels-g"></g>
+
+              </svg>
+            </div>
+            <!-- Floating tooltip -->
+            <div class="map-tooltip" id="map-tooltip"></div>
+          </div>
+        </div>
+        <!-- Right: zones panel -->
+        <div class="map-panel" id="map-panel">
+          <div class="map-panel-title">Zones</div>
+          <div class="map-panel-list" id="map-panel-list">
+            <!-- Populated dynamically by JS -->
+          </div>
+          <div class="map-panel-footer">
+            <div class="map-panel-count" id="map-panel-count">0/9</div>
+            <div class="map-panel-count-label">zones révélées</div>
+          </div>
+        </div>
+      </div>
+
+                        <div class="view" id="view-editor">
+        <div class="editor-wrap">
+          <!-- TOOLBAR -->
+          <div class="editor-toolbar" id="editor-toolbar">
+            <div class="tb-group">
+              <select class="tb-select" id="tb-heading" title="Style">
+                <option value="p">Paragraphe</option>
+                <option value="h1">Titre 1</option>
+                <option value="h2">Titre 2</option>
+                <option value="h3">Titre 3</option>
+                <option value="blockquote">Citation</option>
+                <option value="pre">Code</option>
+              </select>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group">
+              <select class="tb-select" id="tb-font" title="Police" style="max-width:115px">
+                <option value="Georgia,serif">Georgia</option>
+                <option value="'Times New Roman',serif">Times New Roman</option>
+                <option value="Arial,sans-serif">Arial</option>
+                <option value="'Helvetica Neue',sans-serif">Helvetica</option>
+                <option value="Verdana,sans-serif">Verdana</option>
+                <option value="'Trebuchet MS',sans-serif">Trebuchet</option>
+                <option value="'Courier New',monospace">Courier New</option>
+                <option value="Garamond,serif">Garamond</option>
+                <option value="'Comic Sans MS',cursive">Comic Sans</option>
+                <option value="Impact,sans-serif">Impact</option>
+              </select>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group">
+              <select class="tb-select" id="tb-size" title="Taille">
+                <option value="1">XS</option>
+                <option value="2">S</option>
+                <option value="3" selected>M</option>
+                <option value="4">L</option>
+                <option value="5">XL</option>
+                <option value="6">XXL</option>
+              </select>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group">
+              <button class="tb-btn" data-cmd="bold" title="Gras (Ctrl+B)"><b>B</b></button>
+              <button class="tb-btn" data-cmd="italic" title="Italique (Ctrl+I)"><i style="font-family:serif">I</i></button>
+              <button class="tb-btn" data-cmd="underline" title="Souligné (Ctrl+U)"><u>U</u></button>
+              <button class="tb-btn" data-cmd="strikeThrough" title="Barré"><s>S</s></button>
+              <button class="tb-btn" data-cmd="superscript" title="Exposant" style="font-size:10px">x²</button>
+              <button class="tb-btn" data-cmd="subscript" title="Indice" style="font-size:10px">x₂</button>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group">
+              <button class="tb-btn" data-cmd="justifyLeft" title="Gauche">&#8676;</button>
+              <button class="tb-btn" data-cmd="justifyCenter" title="Centre">&#8679;</button>
+              <button class="tb-btn" data-cmd="justifyRight" title="Droite">&#8677;</button>
+              <button class="tb-btn" data-cmd="justifyFull" title="Justifié">&#8803;</button>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group">
+              <button class="tb-btn" data-cmd="insertUnorderedList" title="Liste puces">• Liste</button>
+              <button class="tb-btn" data-cmd="insertOrderedList" title="Liste numérotée">1. Liste</button>
+              <button class="tb-btn" data-cmd="indent" title="Indenter">&#8677;&#8677;</button>
+              <button class="tb-btn" data-cmd="outdent" title="Désindenter">&#8676;&#8676;</button>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group">
+              <button class="tb-btn" id="tb-table" title="Tableau">&#9638; Table</button>
+              <button class="tb-btn" id="tb-link" title="Lien">&#128279; Lien</button>
+              <button class="tb-btn" id="tb-img-btn" title="Image">&#128444; Img</button>
+              <input type="file" id="tb-img-inp" accept="image/*" style="display:none">
+              <button class="tb-btn" id="tb-divider" title="Séparateur HR">— HR</button>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group">
+              <div style="position:relative;display:inline-flex;align-items:center">
+                <button class="tb-btn" id="tb-color-btn" title="Couleur texte" style="font-weight:800">A</button>
+                <input type="color" id="tb-color" value="#111111" class="tb-color-inp">
+              </div>
+              <div style="position:relative;display:inline-flex;align-items:center">
+                <button class="tb-btn" id="tb-hl-btn" title="Surligneur" style="background:rgba(255,235,59,.35)">&#9614;</button>
+                <input type="color" id="tb-hl" value="#ffeb3b" class="tb-color-inp">
+              </div>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group">
+              <button class="tb-btn" data-cmd="undo" title="Annuler (Ctrl+Z)">&#8617;</button>
+              <button class="tb-btn" data-cmd="redo" title="Rétablir (Ctrl+Y)">&#8618;</button>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-group" style="margin-left:auto;gap:6px">
+              <button class="tb-btn" id="tb-imp" title="Importer .txt ou .html">&#128193;</button>
+              <input type="file" id="tb-imp-inp" accept=".txt,.html,.htm" style="display:none">
+              <button class="tb-btn" id="tb-exp-html" title="Exporter HTML" style="color:#8cf">&#128196; HTML</button>
+              <button class="tb-btn" id="tb-exp-txt" title="Exporter texte" style="color:#ccc">&#128196; TXT</button>
+              <button class="tb-btn" id="tb-print" title="Imprimer / PDF">&#128424;</button>
+              <span id="editor-wc" style="font-size:10px;color:#666;white-space:nowrap;align-self:center">0 mots</span>
+              <span id="editor-save-status" style="font-size:10px;color:#666;white-space:nowrap;align-self:center"></span>
+              <button class="tb-btn" id="tb-clear" title="Effacer tout" style="color:#e55">&#128465;</button>
+            </div>
+          </div>
+          <!-- WHITE PAPER -->
+          <div class="editor-paper-bg">
+            <div class="editor-paper">
+              <input class="editor-title-input" id="editor-title-input" placeholder="Titre de la page..." maxlength="200" spellcheck="true">
+              <div class="editor-body" id="editor-body" contenteditable="true" spellcheck="true" data-placeholder="Commence à écrire ici..."></div>
+            </div>
+          </div>
+        </div>
+        <!-- TABLE MODAL -->
+        <div id="ed-tbl-modal">
+          <div class="ed-tbl-box">
+            <div style="font-size:15px;font-weight:700;color:#111;margin-bottom:18px">Insérer un tableau</div>
+            <div style="display:flex;gap:14px;margin-bottom:18px">
+              <label style="font-size:13px;color:#555;display:flex;flex-direction:column;gap:6px">Lignes<input id="tbl-r" type="number" min="1" max="20" value="3" style="width:68px;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:14px"></label>
+              <label style="font-size:13px;color:#555;display:flex;flex-direction:column;gap:6px">Colonnes<input id="tbl-c" type="number" min="1" max="10" value="3" style="width:68px;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:14px"></label>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+              <button id="tbl-no" style="padding:7px 16px;border:1px solid #ddd;border-radius:4px;background:#f5f5f5;cursor:pointer;font-size:13px">Annuler</button>
+              <button id="tbl-yes" style="padding:7px 16px;border:none;border-radius:4px;background:#3b82f6;color:#fff;cursor:pointer;font-size:13px;font-weight:600">Insérer</button>
+            </div>
+          </div>
+        </div>
+        <!-- CROP OVERLAY -->
+        <div id="ed-crop-ov">
+          <div id="ed-crop-wrap">
+            <img id="ed-crop-img" src="" alt="">
+            <div id="ed-crop-box">
+              <span class="ec-corner ec-nw"></span><span class="ec-corner ec-ne"></span>
+              <span class="ec-corner ec-sw"></span><span class="ec-corner ec-se"></span>
+            </div>
+          </div>
+          <div class="ed-crop-btns">
+            <button class="ed-crop-btn ed-crop-cancel" id="ed-crop-no">Annuler</button>
+            <button class="ed-crop-btn ed-crop-ok" id="ed-crop-yes">✂ Rogner</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MINDMAP VIEW -->
+      <div class="view" id="view-mindmap">
+        <div class="mm-shell">
+          <div class="mm-toolbar">
+            <input class="mm-title-inp" id="mm-title-inp" placeholder="Titre de la carte..." maxlength="120" spellcheck="false">
+            <div class="mm-sep"></div>
+            <button class="mm-tool-btn" id="mm-tb-add" title="Ajouter un nœud (ou double-clic sur le canvas)">+ N&#339;ud</button>
+            <button class="mm-tool-btn" id="mm-tb-del" title="Supprimer la sélection (Suppr)">&#128465;</button>
+            <button class="mm-tool-btn" id="mm-tb-undo" title="Annuler (Ctrl+Z)">&#8617; Annuler</button>
+            <div class="mm-sep"></div>
+            <button class="mm-tool-btn" id="mm-tb-fit" title="Ajuster la vue à tous les nœuds">&#8859; Ajuster</button>
+            <button class="mm-tool-btn" id="mm-tb-zin" title="Zoom avant">+</button>
+            <button class="mm-tool-btn" id="mm-tb-zout" title="Zoom arrière">&#8722;</button>
+            <button class="mm-tool-btn" id="mm-tb-zreset" title="Réinitialiser le zoom">100%</button>
+            <div class="mm-sep" style="margin-left:auto"></div>
+            <span class="mm-help-txt">Dbl-clic = nouveau n&#339;ud &nbsp;&#8226;&nbsp; &#9679; = connecter &nbsp;&#8226;&nbsp; Suppr = effacer</span>
+          </div>
+          <div class="mm-canvas-wrap" id="mm-canvas-wrap">
+            <svg id="mm-svg" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="mm-dot-grid" width="26" height="26" patternUnits="userSpaceOnUse">
+                  <circle cx="13" cy="13" r="0.7" fill="rgba(0,245,255,0.1)"/>
+                </pattern>
+                <marker id="mm-arrowhead" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L7,3 z" fill="rgba(0,245,255,0.65)"/>
+                </marker>
+              </defs>
+              <rect id="mm-bg-rect" width="100%" height="100%" fill="url(#mm-dot-grid)"/>
+              <g id="mm-vp" transform="translate(0,0) scale(1)">
+                <g id="mm-edges-g"></g>
+                <g id="mm-temp-line"></g>
+                <g id="mm-nodes-g"></g>
+              </g>
+            </svg>
+            <div class="mm-hint" id="mm-hint">
+              <div class="mm-hint-icon">&#129504;</div>
+              <div class="mm-hint-title">Mind Map vierge</div>
+              <div class="mm-hint-sub">Double-cliquez n'importe où pour ajouter votre première idée</div>
+              <div class="mm-hint-sub" style="margin-top:4px;font-size:11px">Glissez le <strong style="color:var(--accent)">&#9679;</strong> d'un n&#339;ud pour le connecter à un autre</div>
+            </div>
+            <div class="mm-text-overlay" id="mm-text-overlay">
+              <textarea class="mm-text-ta" id="mm-text-ta" placeholder="Texte..." rows="2" spellcheck="false"></textarea>
+              <button class="mm-text-ok-btn" id="mm-text-ok">&#10003; OK</button>
+            </div>
+            <div class="mm-props" id="mm-props" style="display:none">
+              <div class="mm-props-title mm-node-only">N&#338;UD SÉLECTIONNÉ</div>
+              <div class="mm-props-title mm-edge-only" style="display:none">CONNEXION</div>
+              <div class="mm-node-only">
+                <div class="mm-props-label" style="margin-top:0">Couleur</div>
+                <div class="mm-color-grid">
+                  <div class="mm-c-dot" data-color="#00f5ff" style="background:#00f5ff"></div>
+                  <div class="mm-c-dot" data-color="#00ff9d" style="background:#00ff9d"></div>
+                  <div class="mm-c-dot" data-color="#7b5fff" style="background:#7b5fff"></div>
+                  <div class="mm-c-dot" data-color="#ff2d6b" style="background:#ff2d6b"></div>
+                  <div class="mm-c-dot" data-color="#e8c96a" style="background:#e8c96a"></div>
+                  <div class="mm-c-dot" data-color="#ff00c8" style="background:#ff00c8"></div>
+                  <div class="mm-c-dot" data-color="#6aa8e8" style="background:#6aa8e8"></div>
+                  <div class="mm-c-dot" data-color="#e8706a" style="background:#e8706a"></div>
+                </div>
+                <div class="mm-props-label">Forme</div>
+                <div class="mm-shape-row">
+                  <button class="mm-sh-btn" data-shape="rounded" title="Arrondi">&#11835;</button>
+                  <button class="mm-sh-btn" data-shape="rect" title="Rectangle">&#9645;</button>
+                  <button class="mm-sh-btn" data-shape="circle" title="Ellipse">&#9675;</button>
+                  <button class="mm-sh-btn" data-shape="diamond" title="Losange">&#9671;</button>
+                  <button class="mm-sh-btn" data-shape="hexagon" title="Hexagone">&#11041;</button>
+                </div>
+                <div class="mm-props-label">Taille texte</div>
+                <div class="mm-font-row">
+                  <button class="mm-fs-btn" data-fs="11">S</button>
+                  <button class="mm-fs-btn" data-fs="13">M</button>
+                  <button class="mm-fs-btn" data-fs="16">L</button>
+                </div>
+              </div>
+              <div class="mm-edge-only" style="display:none">
+                <div class="mm-props-label" style="margin-top:0;margin-bottom:14px;color:var(--fog);text-transform:none;letter-spacing:0.3px;font-size:11px">Connexion entre deux n&#339;uds</div>
+                <button class="mm-tool-btn" id="mm-del-edge-btn" style="width:100%;justify-content:center;color:var(--red);border-color:rgba(255,45,107,0.3)">&#128465; Supprimer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- TO DO LIST VIEW -->
+      <div class="view" id="view-todo">
+        <div class="todo-bg-wrap">
+          <div class="todo-shell">
+            <div class="todo-header">
+              <input class="todo-title-inp" id="todo-title-inp" placeholder="Titre de la liste..." maxlength="120" spellcheck="false">
+              <div class="todo-meta">
+                <div class="todo-progress-wrap">
+                  <div class="todo-progress-bar"><div class="todo-progress-fill" id="todo-prog-fill" style="width:0%"></div></div>
+                </div>
+                <div class="todo-stats"><span id="todo-done-count">0</span> / <span id="todo-total-count">0</span> tâches</div>
+              </div>
+            </div>
+            <div class="todo-lists" id="todo-lists-container"></div>
+            <div style="margin-top:16px">
+              <div class="todo-add-list-btn" id="todo-add-list-btn">&#43; Nouvelle liste</div>
+            </div>
+          </div>
+        </div>
+        <!-- Hidden date input for picking due dates -->
+        <input type="date" class="todo-date-inp" id="todo-date-inp-hidden">
+      </div>
+
+      <!-- ACHIEVEMENTS VIEW -->
+      <div class="view" id="view-achievements"></div>
+
+      <div class="view" id="view-params">
+        <div style="background:rgba(8,6,20,0.75);backdrop-filter:blur(12px);border:1px solid rgba(0,245,255,0.1);border-radius:12px;padding:28px 32px;max-width:640px;box-shadow:0 8px 40px rgba(0,0,0,0.5),inset 0 0 40px rgba(0,245,255,0.02)">
+
+          <div class="params-section-title">Apparence</div>
+          <div class="params-card">
+            <div class="params-card-left">
+              <div class="params-card-icon">🌙</div>
+              <div>
+                <div class="params-card-name">Thème</div>
+                <div class="params-card-desc">Basculer entre le mode sombre et le mode clair</div>
+              </div>
+            </div>
+            <button id="btn-theme" title="Changer de theme" style="background:none;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:18px;color:var(--fog);transition:all 0.15s;line-height:1;flex-shrink:0">🌙</button>
+          </div>
+          <div class="params-card">
+            <div class="params-card-left">
+              <div class="params-card-icon">🎨</div>
+              <div>
+                <div class="params-card-name">Couleur néon</div>
+                <div class="params-card-desc">Choisir la couleur d'accentuation de l'interface</div>
+              </div>
+            </div>
+            <button id="btn-color" title="Couleur néon" style="width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);cursor:pointer;background:var(--accent);box-shadow:0 0 10px var(--accent),0 0 20px rgba(0,245,255,0.3);transition:all 0.2s;flex-shrink:0"></button>
+          </div>
+          <div class="params-card">
+            <div class="params-card-left">
+              <div class="params-card-icon">🖼</div>
+              <div>
+                <div class="params-card-name">Fond d'écran</div>
+                <div class="params-card-desc">Personnaliser l'arrière-plan de l'application</div>
+              </div>
+            </div>
+            <button class="btn-bg" id="btn-bg" style="padding:8px 16px;font-size:13px">Changer</button>
+          </div>
+
+          <!-- MES INTROS -->
+          <div class="params-section-title" style="margin-top:28px">Mes Intros</div>
+          <div class="params-card" style="flex-direction:column;align-items:flex-start;gap:16px;clip-path:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+              <div>
+                <div class="params-card-name">Vidéo de démarrage</div>
+                <div class="params-card-desc">Sélectionne une intro qui se lancera à chaque ouverture</div>
+              </div>
+              <button id="btn-skip-intro" class="btn-bg" style="font-size:11px;padding:5px 11px;white-space:nowrap">Aucune intro</button>
+            </div>
+            <div class="intros-grid" id="intros-grid"></div>
+          </div>
+
+          <!-- CORBEILLE -->
+          <div class="params-section-title" style="margin-top:32px">Corbeille</div>
+          <div class="params-card" style="cursor:default">
+            <div class="params-card-left">
+              <div class="params-card-icon">🗑</div>
+              <div>
+                <div class="params-card-name">Quêtes supprimées</div>
+                <div class="params-card-desc" id="trash-count-desc">Chargement…</div>
+              </div>
+            </div>
+            <button class="btn-bg" id="btn-open-trash" style="padding:8px 16px;font-size:13px">Afficher</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ENTRY SCREEN + INTRO OVERLAY -->
+<div id="entry-screen" style="display:none;position:fixed;inset:0;z-index:99999;background:#000;align-items:center;justify-content:center;flex-direction:column;gap:24px;cursor:pointer">
+  <div style="font-family:'Playfair Display',serif;font-size:48px;color:#00f5ff;text-shadow:0 0 30px rgba(0,245,255,0.8),0 0 60px rgba(0,245,255,0.4);letter-spacing:6px;animation:introPulse 1.8s ease-in-out infinite">HORIZON</div>
+  <div style="font-family:'Outfit',sans-serif;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.4);animation:introPulse 1.8s ease-in-out infinite 0.4s">Cliquer pour entrer</div>
+</div>
+<div id="intro-overlay" style="display:none;position:fixed;inset:0;z-index:99998;background:#000;align-items:center;justify-content:center">
+  <video id="intro-video" style="width:100%;height:100%;object-fit:cover" playsinline></video>
+  <button id="intro-skip" style="position:absolute;bottom:32px;right:32px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.6);font-family:'Outfit',sans-serif;font-size:12px;padding:8px 16px;cursor:pointer;letter-spacing:1px;transition:all 0.2s">Passer ▶</button>
+</div>
+
+<div id="lvlup">
+  <div class="lvlup-box">
+    <div style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--fog);margin-bottom:10px">Niveau supérieur !</div>
+    <div class="lvlup-num" id="lu-num">2</div>
+    <div class="lvlup-name" id="lu-name">Aventurier</div>
+    <div class="lvlup-sub" id="lu-sub">Continue comme ça !</div>
+    <button class="btn-primary" id="lu-close" style="margin:0 auto">Continuer ⚔️</button>
+  </div>
+</div>
+
+<div id="hz-lb">
+  <button id="hz-lb-x">&#10005;</button>
+  <img id="hz-lb-img" src="" alt="">
+  <div id="hz-lb-bar">
+    <button id="hz-lb-out">&#8722;</button>
+    <span id="hz-lb-pct">100%</span>
+    <button id="hz-lb-rst">&#8857;</button>
+    <button id="hz-lb-in">+</button>
+  </div>
+</div>
+<!-- EXIT POPUP -->
+<div id="exit-overlay" style="display:none;position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,0.97);backdrop-filter:blur(16px);align-items:center;justify-content:center">
+  <div class="exit-box">
+    <div class="exit-top-line"></div>
+    <div class="exit-emblem" id="exit-emblem">⚔️</div>
+    <div class="exit-title">Avant de partir...</div>
+    <div class="exit-question" id="exit-question">T'as farmé un peu aujourd'hui ?</div>
+    <div class="exit-hp-display">
+      <div class="exit-hp-bar-wrap">
+        <img src="assets/hp_bar_vide.png" class="exit-hp-bg" alt="">
+        <svg class="exit-hp-svg" viewBox="0 0 222 29" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <defs>
+            <clipPath id="exit-hp-clip">
+              <rect id="exit-hp-clip-rect" x="75" y="0" width="141" height="29"/>
+            </clipPath>
+          </defs>
+          <path id="exit-hp-glow" d="M 75,9 L 75,21 L 207,21 L 216,9 Z" fill="#00ff66" opacity="0.3" clip-path="url(#exit-hp-clip)"/>
+          <path id="exit-hp-fill" d="M 75,9 L 75,21 L 207,21 L 216,9 Z" fill="#00ff66" opacity="0.9" clip-path="url(#exit-hp-clip)"/>
+          <text x="38" y="17" text-anchor="middle" dominant-baseline="middle"
+                fill="#00f5ff" font-family="Outfit,sans-serif" font-size="11"
+                font-weight="700" letter-spacing="2"
+                style="pointer-events:none;user-select:none;filter:drop-shadow(0 0 3px #00f5ff) drop-shadow(0 0 6px rgba(0,245,255,0.6))">AXSAN</text>
+        </svg>
+      </div>
+      <div class="exit-pv-label"><span id="exit-hp-val">100</span> / 100 PV</div>
+    </div>
+    <div class="exit-btns" id="exit-btns">
+      <button class="exit-btn exit-oui" id="exit-oui">
+        <span>⚡</span><span>Oui, j'ai farmé !</span>
+      </button>
+      <button class="exit-btn exit-non" id="exit-non">
+        <span>😴</span><span>Non, pas vraiment…</span>
+      </button>
+    </div>
+    <!-- MICRO-ACTION STEP -->
+    <div id="exit-microaction" style="display:none;padding:0 28px 8px">
+      <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--fog);margin-bottom:10px;text-align:center">Tu pourrais commencer, même juste un peu :</div>
+      <div id="exit-micro-task" style="font-family:'Playfair Display',serif;font-size:15px;color:var(--snow);background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.18);border-radius:2px;padding:13px 16px;margin-bottom:16px;line-height:1.55;text-align:left;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))"></div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="exit-btn exit-oui" id="exit-micro-do" style="flex:1;max-width:210px;font-size:11px;padding:11px 10px;letter-spacing:0.3px">
+          <span>✅</span><span>Faire l'action</span>
+        </button>
+        <button class="exit-btn exit-non" id="exit-micro-skip" style="flex:1;max-width:210px;font-size:10px;padding:11px 8px;letter-spacing:0.2px">
+          <span>😴</span><span>Je veux quand même arrêter</span>
+        </button>
+      </div>
+    </div>
+    <div class="exit-answered" id="exit-answered" style="display:none"></div>
+    <div class="exit-hint" id="exit-hint">Oui → PV max + 5 XP &nbsp;·&nbsp; Non → micro-action proposée &nbsp;·&nbsp; Refus → −10 PV</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
