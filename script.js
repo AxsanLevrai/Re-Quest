@@ -566,7 +566,7 @@ document.getElementById('viewer-list').addEventListener('click',e=>{
 document.getElementById('viewer-add-btn').addEventListener('click',()=>document.getElementById('viewer-file-input').click());
 document.getElementById('viewer-file-input').addEventListener('change',async e=>{
   const g=goals.find(g=>g.id===viewerTargetId);if(!g)return;
-  for(const f of Array.from(e.target.files)){if(f.size>10*1024*1024){showToast('Trop lourd: '+f.name);continue;}const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=ev=>res(ev.target.result);r.onerror=rej;r.readAsDataURL(f);});if(!g.files)g.files=[];g.files.push({name:f.name,size:f.size,type:f.type,data});}
+  for(const f of Array.from(e.target.files)){if(f.size>10*1024*1024){showToast('Trop lourd: '+f.name);continue;}if(window.sb&&window.currentUser){try{const path=`${window.currentUser.id}/files/${g.id}_${Date.now()}_${f.name}`;const{error:upErr}=await window.sb.storage.from('quest-images').upload(path,f,{upsert:true});if(upErr)throw upErr;const{data:urlData}=window.sb.storage.from('quest-images').getPublicUrl(path);if(!g.files)g.files=[];g.files.push({name:f.name,size:f.size,type:f.type,url:urlData.publicUrl});saveGoals();renderViewer(g);renderGoals();showToast('Fichier ajoute !');e.target.value='';continue;}catch(err){console.error('Storage upload error:',err);}}const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=ev=>res(ev.target.result);r.onerror=rej;r.readAsDataURL(f);});if(!g.files)g.files=[];g.files.push({name:f.name,size:f.size,type:f.type,data});}
   saveGoals();renderViewer(g);renderGoals();showToast('Fichier ajoute !');e.target.value='';
 });
 document.getElementById('viewer-close-btn').addEventListener('click',()=>closeOv('viewer-overlay'));
