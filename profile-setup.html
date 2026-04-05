@@ -372,7 +372,7 @@ async function saveProfile() {
   showLoading('Création du profil...');
 
   try {
-    let avatar_url = (window._profileData && window._profileData.avatar_url) ? window._profileData.avatar_url : (currentUser.user_metadata?.avatar_url || '');
+    let avatar_url = (window._profileData && window._profileData.avatar_url) ? window._profileData.avatar_url : '';
     let banniere_url = (window._profileData && window._profileData.banniere_url) ? window._profileData.banniere_url : '';
 
     // Upload avatar if provided
