@@ -3811,7 +3811,7 @@ loadCalEvents().then(evs=>{
   var tooltipInited = false;
 
   // ── Persistence ─────────────────────────────────────────
-  function loadUnlocked(){
+  async function loadUnlocked(){
     try {
       if(window.sb && window.currentUser) {
         const {data: row, error} = await window.sb.from('users_data').select('map_unlocked').eq('id', window.currentUser.id).single();
