@@ -12,6 +12,8 @@ window.userProfile = null;
 function injectProfile(profile) {
   const el = document.getElementById('hp-player-name');
   if(el) el.textContent = (profile.pseudo || '').toUpperCase();
+  const exitEl = document.getElementById('exit-hp-player-name');
+  if(exitEl) exitEl.textContent = (profile.pseudo || '').toUpperCase();
   const nav = document.getElementById('nav-pseudo');
   if(nav) nav.textContent = profile.pseudo || 'Profil';
   const avatar = document.getElementById('nav-avatar');
