@@ -250,7 +250,7 @@ let avatarFile = null;
 let bannerFile = null;
 
 // ── Auth check ────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async function(){
+(async function(){
   const { data: { session } } = await sb.auth.getSession();
   if(!session) { window.location.href = 'login.html'; return; }
   currentUser = session.user;
@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', async function(){
 
   // Set date
   document.getElementById('prev-date').textContent = new Date().toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
-});
+})();
 
 // ── Live preview update ───────────────────────────────────
 function updatePreview() {
