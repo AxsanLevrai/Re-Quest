@@ -1178,7 +1178,7 @@ async function loadHP(){
         hpState = lsGet('hz_hp', {current:100, lastDay:'', nonCount:0, moodMalusDate:'', moodMalusVal:0});
         hpState.current = row.hp || 100;
         lsSet('hz_hp', hpState);
-        if(row.xp !== null) { xpData = lsGet('hz_xp', {total:0}); xpData.total = row.xp; lsSet('hz_xp', xpData); }
+        if(row.xp !== null) { xpData = {total: row.xp}; lsSet('hz_xp', xpData); }
         return;
       }
     } catch(e) { console.error('loadHP error:', e); }
