@@ -245,6 +245,7 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
+let isEditMode = false;
 let avatarFile = null;
 let bannerFile = null;
 
@@ -256,7 +257,17 @@ let bannerFile = null;
 
   // Check if profile already exists
   const { data } = await sb.from('users_profiles').select('id').eq('id', currentUser.id).single();
-  if(data) { window.location.href = 'index.html'; return; }
+  if(data) {
+    isEditMode = true;
+    document.getElementById('pseudo').value = data.pseudo || '';
+    document.getElementById('statut').value = data.statut || '';
+    document.getElementById('bio').value = data.bio || '';
+    if(data.avatar_url) { const img = document.getElementById('avatar-preview'); img.src = data.avatar_url; img.style.display = 'block'; }
+    if(data.banniere_url) { const img = document.getElementById('banner-preview'); if(img) { img.src = data.banniere_url; img.style.display = 'block'; } }
+    document.querySelector('.btn-submit').textContent = 'Sauvegarder ✨';
+    document.querySelector('h1') && (document.querySelector('h1').textContent = 'Modifier mon profil');
+    updatePreview();
+  }
 
   // Pre-fill with Google data if available
   const meta = currentUser.user_metadata;
@@ -359,8 +370,8 @@ async function saveProfile() {
       banniere_url = await uploadFile(bannerFile, 'banners', `${currentUser.id}/banner`);
     }
 
-    // Create profile in DB
-    const { error } = await sb.from('users_profiles').insert({
+    // Create or update profile in DB
+    const { error } = isEditMode ? await sb.from('users_profiles').update({
       id: currentUser.id,
       pseudo,
       bio: document.getElementById('bio').value.trim(),
@@ -377,7 +388,7 @@ async function saveProfile() {
       xp: 0, niveau: 1, hp: 100, streak: 0, streak_best: 0
     });
 
-    showLoading("C'est parti ! ⚔️");
+    showLoading(isEditMode ? 'Profil mis à jour ! ✨' : "C'est parti ! ⚔️");
     setTimeout(() => { window.location.href = 'index.html'; }, 800);
 
   } catch(err) {
