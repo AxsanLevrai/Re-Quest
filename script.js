@@ -525,6 +525,7 @@ function renderLogList(g){
       if(!confirm('Supprimer cette entrée ?')) return;
       g.log.splice(idx,1);
       saveGoals();
+      renderGoals();
       const fresh=goals.find(x=>x.id===g.id);
       renderLogList(fresh||g);
     });
