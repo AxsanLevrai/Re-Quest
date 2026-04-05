@@ -84,12 +84,6 @@ async function loadGoals(){
     } catch(e) { console.error('loadGoals Supabase error:', e); }
   }
   return seedGoals();
-  try{return await Promise.all(lean.map(async g=>{
-    const f={...g};
-    try{const c=await idbGet('cov_'+g.id);if(c)f.cover=c;}catch(e){}
-    if(f.files&&f.files.length)f.files=await Promise.all(f.files.map(async(fi,i)=>{try{const d=await idbGet('fil_'+g.id+'_'+i);if(d)return{...fi,data:d}}catch(e){}return fi;}));
-    return f;
-  }));}catch(e){return lean;}
 }
 function saveBg(){
   lsSet('hz_bg',{type:bgSettings.type,opacity:bgSettings.opacity,blur:bgSettings.blur??0});
@@ -112,7 +106,7 @@ async function loadTrash(){
   if(window.sb && window.currentUser) {
     try {
       const {data: row} = await window.sb.from('users_data').select('trash').eq('id', window.currentUser.id).maybeSingle();
-      if(row && row.trash) { trash = row.trash; lsSet('hz_trash', trash); return; }
+      if(row && row.trash !== null && row.trash !== undefined) { trash = row.trash; lsSet('hz_trash', trash); return; }
     } catch(e) { console.error('loadTrash error:', e); }
   }
   trash = lsGet('hz_trash', []);
