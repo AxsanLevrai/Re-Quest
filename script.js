@@ -4623,9 +4623,9 @@ function buildProfileView() {
   const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR', {month:'long', year:'numeric'}) : '';
   el.innerHTML = `
     <div style="max-width:700px;margin:0 auto;padding:24px 16px">
-      <div style="position:relative;border-radius:12px;overflow:hidden;margin-bottom:60px;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.1)">
+      <div style="position:relative;border-radius:12px;overflow:hidden;margin-bottom:70px;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.1)">
         <div style="height:160px;background:${p.banniere_url ? 'url('+p.banniere_url+') center/cover' : 'linear-gradient(135deg,rgba(0,245,255,0.1),rgba(139,91,255,0.1))'};"></div>
-        <div style="position:absolute;bottom:-40px;left:24px;width:80px;height:80px;border-radius:50%;border:3px solid var(--night1);overflow:hidden;background:var(--night2)">
+        <div style="position:absolute;bottom:-50px;left:24px;width:90px;height:90px;border-radius:50%;border:3px solid var(--night1);overflow:hidden;background:var(--night2)">
           <img src="${p.avatar_url||''}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
         </div>
       </div>

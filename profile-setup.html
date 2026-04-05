@@ -256,7 +256,7 @@ let bannerFile = null;
   currentUser = session.user;
 
   // Check if profile already exists
-  const { data } = await sb.from('users_profiles').select('id').eq('id', currentUser.id).single();
+  const { data } = await sb.from('users_profiles').select('*').eq('id', currentUser.id).single();
   if(data) {
     isEditMode = true;
     document.getElementById('pseudo').value = data.pseudo || '';
