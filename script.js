@@ -108,8 +108,21 @@ function saveMood(){
     window.sb.from('users_mood').upsert({id: window.currentUser.id, data: moodLog, updated_at: new Date().toISOString()}).then(({error}) => { if(error) console.error('saveMood error:', error); });
   }
 }
-function loadTrash(){trash=lsGet('hz_trash',[]);}
-function saveTrash(){lsSet('hz_trash',trash);}
+async function loadTrash(){
+  if(window.sb && window.currentUser) {
+    try {
+      const {data: row} = await window.sb.from('users_data').select('trash').eq('id', window.currentUser.id).maybeSingle();
+      if(row && row.trash) { trash = row.trash; lsSet('hz_trash', trash); return; }
+    } catch(e) { console.error('loadTrash error:', e); }
+  }
+  trash = lsGet('hz_trash', []);
+}
+function saveTrash(){
+  lsSet('hz_trash', trash);
+  if(window.sb && window.currentUser) {
+    window.sb.from('users_data').update({trash: trash}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('saveTrash error:', error); });
+  }
+}
 
 // SEED
 function seedGoals(){return [];//
@@ -342,7 +355,14 @@ function placeCards(list){
     }
   });
 }
-function savePosAll(){const pos={};document.querySelectorAll('.goal-card').forEach(c=>{pos[+c.dataset.id]={x:c.offsetLeft,y:c.offsetTop};});lsSet('hz_pos',pos);}
+function savePosAll(){
+  const pos={};
+  document.querySelectorAll('.goal-card').forEach(c=>{pos[+c.dataset.id]={x:c.offsetLeft,y:c.offsetTop};});
+  lsSet('hz_pos', pos);
+  if(window.sb && window.currentUser) {
+    window.sb.from('users_data').update({pos: pos}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('savePos error:', error); });
+  }
+}
 function updateGridH(){const grid=document.getElementById('goals-grid');let max=400;grid.querySelectorAll('.goal-card').forEach(c=>{const b=c.offsetTop+c.offsetHeight;if(b>max)max=b;});grid.style.minHeight=(max+40)+'px';}
 function initDrag(){
   document.querySelectorAll('.goal-card').forEach(card=>{
