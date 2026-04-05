@@ -4610,6 +4610,7 @@ loadCalEvents().then(evs=>{
 
   // ── Reset task achievements (one-time clean slate) ──────────
   (function resetTaskAch(){
+    if(!as || !as.unlocked) return;
     if(as.tracking&&as.tracking._task_reset_v1) return;
     var ids=['p1','p2','p3','p4','p5','p6','d1','d2','d4','d5'];
     ids.forEach(function(id){ delete as.unlocked[id]; });
