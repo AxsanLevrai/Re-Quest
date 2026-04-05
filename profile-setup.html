@@ -372,14 +372,19 @@ async function saveProfile() {
     }
 
     // Create or update profile in DB
-    const { error } = isEditMode ? await sb.from('users_profiles').update({
-      id: currentUser.id,
+    const profileData = {
       pseudo,
       bio: document.getElementById('bio').value.trim(),
       statut: document.getElementById('statut').value.trim() || 'En quête de grandeur 🔥',
       avatar_url,
       banniere_url,
-    });
+    };
+    let error;
+    if(isEditMode) {
+      ({ error } = await sb.from('users_profiles').update(profileData).eq('id', currentUser.id));
+    } else {
+      ({ error } = await sb.from('users_profiles').insert({id: currentUser.id, ...profileData}));
+    }
 
     if(error) throw error;
 
