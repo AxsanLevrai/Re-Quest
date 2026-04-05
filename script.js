@@ -331,6 +331,18 @@ function cardHTML(g){
 }
 
 // FREE DRAG
+async function loadPos(){
+  if(window.sb && window.currentUser){
+    try {
+      const {data: row} = await window.sb.from('users_data')
+        .select('pos').eq('id', window.currentUser.id).maybeSingle();
+      if(row && row.pos !== null && row.pos !== undefined){
+        lsSet('hz_pos', row.pos);
+        return;
+      }
+    } catch(e){ console.error('loadPos error:', e); }
+  }
+}
 function placeCards(list){
   const pos=lsGet('hz_pos',{});
   const W=320,GAP=18;
@@ -356,7 +368,9 @@ function savePosAll(){
   document.querySelectorAll('.goal-card').forEach(c=>{pos[+c.dataset.id]={x:c.offsetLeft,y:c.offsetTop};});
   lsSet('hz_pos', pos);
   if(window.sb && window.currentUser) {
-    window.sb.from('users_data').update({pos: pos}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('savePos error:', error); });
+    window.sb.from('users_data')
+      .upsert({id: window.currentUser.id, pos: pos}, {onConflict: 'id'})
+      .then(({error}) => { if(error) console.error('savePos error:', error); });
   }
 }
 function updateGridH(){const grid=document.getElementById('goals-grid');let max=400;grid.querySelectorAll('.goal-card').forEach(c=>{const b=c.offsetTop+c.offsetHeight;if(b>max)max=b;});grid.style.minHeight=(max+40)+'px';}
@@ -1027,6 +1041,7 @@ async function initApp() {
     // Load everything in order, waiting for each
     await loadMoodLog();
     await loadTrash();
+    await loadPos();
     await loadHP();
     const [g, bg] = await Promise.all([
       loadGoals().catch(()=>seedGoals()),
@@ -1536,10 +1551,22 @@ document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
     const wc=document.getElementById('editor-wc');
     if(!body) return;
 
-    // Restore
-    const saved=lsGet('hz_editor',{title:'',content:''});
-    title.value=saved.title||'';
-    if(saved.content){body.innerHTML=saved.content;setTimeout(initImgs,120);}
+    // Restore — charge depuis Supabase puis applique
+    async function restoreEditor(){
+      if(window.sb && window.currentUser){
+        try {
+          const {data: row} = await window.sb.from('users_data')
+            .select('editor_draft').eq('id', window.currentUser.id).maybeSingle();
+          if(row && row.editor_draft !== null && row.editor_draft !== undefined){
+            lsSet('hz_editor', row.editor_draft);
+          }
+        } catch(e){ console.error('loadEditor error:', e); }
+      }
+      const saved=lsGet('hz_editor',{title:'',content:''});
+      title.value=saved.title||'';
+      if(saved.content){body.innerHTML=saved.content;setTimeout(initImgs,120);}
+    }
+    restoreEditor();
 
     // Save
     function save(){
@@ -1547,7 +1574,13 @@ document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
       if(status) status.textContent='✎ Sauvegarde...';
       if(wc){const t=(body.innerText||'').trim();wc.textContent=(t?t.split(/\s+/).length:0)+' mots';}
       saveTimer=setTimeout(()=>{
-        lsSet('hz_editor',{title:title.value,content:body.innerHTML});
+        const edDraft={title:title.value,content:body.innerHTML};
+        lsSet('hz_editor',edDraft);
+        if(window.sb && window.currentUser){
+          window.sb.from('users_data')
+            .upsert({id: window.currentUser.id, editor_draft: edDraft}, {onConflict: 'id'})
+            .then(({error})=>{ if(error) console.error('saveEditor error:', error); });
+        }
         if(status){status.textContent='✓ Sauvegardé';setTimeout(()=>{status.textContent='';},1800);}
       },700);
     }
@@ -1670,7 +1703,13 @@ document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
     document.getElementById('tb-clear').addEventListener('click',()=>{
       if(!confirm('Effacer tout le contenu de la page ?')) return;
       body.innerHTML=''; title.value='';
-      lsSet('hz_editor',{title:'',content:''});
+      const emptyDraft={title:'',content:''};
+      lsSet('hz_editor',emptyDraft);
+      if(window.sb && window.currentUser){
+        window.sb.from('users_data')
+          .upsert({id: window.currentUser.id, editor_draft: emptyDraft}, {onConflict: 'id'})
+          .then(({error})=>{ if(error) console.error('clearEditor error:', error); });
+      }
       if(status){status.textContent='✓ Effacé';setTimeout(()=>{status.textContent='';},1500);}
       if(wc) wc.textContent='0 mots';
     });
@@ -2584,13 +2623,31 @@ if(window.currentUser) {
 (function(){
   var TODAY = new Date().toISOString().split('T')[0];
 
+  async function loadStreak(){
+    if(window.sb && window.currentUser){
+      try {
+        const {data: row} = await window.sb.from('users_data')
+          .select('streak, streak_best').eq('id', window.currentUser.id).maybeSingle();
+        if(row && row.streak !== null && row.streak !== undefined){
+          const s = lsGet('hz_streak', {count:0, best:0, lastDay:'', history:[]});
+          s.count = row.streak;
+          s.best  = row.streak_best || s.best;
+          lsSet('hz_streak', s);
+          return s;
+        }
+      } catch(e){ console.error('loadStreak error:', e); }
+    }
+    return lsGet('hz_streak', {count:0, best:0, lastDay:'', history:[]});
+  }
   function getStreak(){
     return lsGet('hz_streak', {count:0, best:0, lastDay:'', history:[]});
   }
   function saveStreak(s){
     lsSet('hz_streak', s);
     if(window.sb && window.currentUser) {
-      window.sb.from('users_data').update({streak: s.count, streak_best: s.best}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('saveStreak error:', error); });
+      window.sb.from('users_data')
+        .upsert({id: window.currentUser.id, streak: s.count, streak_best: s.best}, {onConflict: 'id'})
+        .then(({error}) => { if(error) console.error('saveStreak error:', error); });
     }
   }
 
@@ -2667,8 +2724,13 @@ if(window.currentUser) {
     dotsEl.innerHTML = dots;
   }
 
-  // Run on load
-  updateStreak();
+  // Run on load — attend auth avant de lire Supabase
+  async function initStreak(){
+    await loadStreak();
+    updateStreak();
+  }
+  if(window.currentUser){ initStreak(); }
+  else { window.addEventListener('auth-ready', initStreak, {once:true}); }
 })();
 // ══════════════════════════════════════════════════════════
 // MES PAGES MODULE
