@@ -3271,13 +3271,13 @@ if(window.currentUser) {
         e.stopPropagation();
         var nid=el.dataset.id;
         var now=Date.now();
-        if(el._lastDown && now-el._lastDown<350){
-          // Double clic détecté
-          el._lastDown=0;
+        if(!mm._lastDown) mm._lastDown={};
+        if(mm._lastDown[nid] && now-mm._lastDown[nid]<350){
+          mm._lastDown[nid]=0;
           openTextEdit(nid);
           return;
         }
-        el._lastDown=now;
+        mm._lastDown[nid]=now;
         onNodeDown(e,nid);
       });
     });
