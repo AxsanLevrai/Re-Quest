@@ -62,7 +62,7 @@ window.sb.auth.onAuthStateChange((event) => {
 window.supabaseSignOut = async function() {
   // Clear ALL user-specific local cache
   ['hz_goals','hz_mood','hz_pages','hz_ach','hz_map_unlocked',
-   'hz_hp','hz_streak','hz_xp','hz_niveau'].forEach(k => localStorage.removeItem(k));
+   'hz_hp','hz_streak','hz_xp','hz_niveau','hz_trash','hz_pos'].forEach(k => localStorage.removeItem(k));
   await window.sb.auth.signOut();
   window.location.href = 'login.html';
 };
