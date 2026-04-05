@@ -506,7 +506,42 @@ document.getElementById('goal-save-btn').addEventListener('click',()=>{
 document.getElementById('goal-cancel-btn').addEventListener('click',()=>closeOv('goal-overlay'));
 
 // LOG
-function openLog(id){const g=goals.find(g=>g.id===id);if(!g)return;logTargetId=id;document.getElementById('log-goal-name').textContent=(g.icon||'')+' '+g.name;document.getElementById('log-note').value='';const p=Math.min(g.progress||0,100);document.getElementById('log-prog').value=p;document.getElementById('log-prog-val').textContent=p+'%';const logs=[...(g.log||[])].reverse();document.getElementById('log-list').innerHTML=logs.length?logs.map(l=>'<div class="log-entry"><div class="log-dot"></div><span class="log-text">'+l.note+(l.prog!=null?' → '+l.prog+'%':'')+'</span><span class="log-date">'+fmtDate(l.date)+'</span></div>').join(''):'<p style="font-size:13px;color:var(--fog);padding:4px">Aucune entree.</p>';openOv('log-overlay');}
+function renderLogList(g){
+  const logs=[...(g.log||[])].reverse();
+  const logList=document.getElementById('log-list');
+  logList.innerHTML=logs.length?logs.map((l,ri)=>{
+    const i=(g.log||[]).length-1-ri;
+    return '<div class="log-entry" data-idx="'+i+'">'+
+      '<div class="log-dot"></div>'+
+      '<span class="log-text">'+l.note+(l.prog!=null?' → '+l.prog+'%':'')+'</span>'+
+      '<span class="log-date">'+fmtDate(l.date)+'</span>'+
+      '<button class="log-edit-btn" data-idx="'+i+'" title="Modifier">✏️</button>'+
+      '<button class="log-del-btn" data-idx="'+i+'" title="Supprimer">🗑️</button>'+
+    '</div>';
+  }).join(''):'<p style="font-size:13px;color:var(--fog);padding:4px">Aucune entree.</p>';
+  logList.querySelectorAll('.log-del-btn').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      const idx=+this.dataset.idx;
+      if(!confirm('Supprimer cette entrée ?')) return;
+      g.log.splice(idx,1);
+      saveGoals();
+      renderLogList(g);
+    });
+  });
+  logList.querySelectorAll('.log-edit-btn').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      const idx=+this.dataset.idx;
+      const entry=g.log[idx];
+      document.getElementById('log-note').value=entry.note||'';
+      if(entry.prog!=null){document.getElementById('log-prog').value=entry.prog;document.getElementById('log-prog-val').textContent=entry.prog+'%';}
+      // Supprimer l'ancienne entree pour la remplacer a la sauvegarde
+      g.log.splice(idx,1);
+      saveGoals();
+      renderLogList(g);
+    });
+  });
+}
+function openLog(id){const g=goals.find(g=>g.id===id);if(!g)return;logTargetId=id;document.getElementById('log-goal-name').textContent=(g.icon||'')+' '+g.name;document.getElementById('log-note').value='';const p=Math.min(g.progress||0,100);document.getElementById('log-prog').value=p;document.getElementById('log-prog-val').textContent=p+'%';renderLogList(g);openOv('log-overlay');}
 document.getElementById('log-prog').addEventListener('input',e=>document.getElementById('log-prog-val').textContent=e.target.value+'%');
 document.getElementById('log-save-btn').addEventListener('click',()=>{
   const note=document.getElementById('log-note').value.trim();if(!note){alert('Ajoutez une note.');return;}
