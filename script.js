@@ -1005,10 +1005,10 @@ document.querySelectorAll('.size-btn').forEach(b => {
 });
 
 // INIT
-loadMoodLog();
 loadTrash();
 document.getElementById('btn-open-trash')?.addEventListener('click', openTrashModal);
-function initApp() {
+async function initApp() {
+  await loadMoodLog();
   Promise.all([loadGoals().catch(()=>seedGoals()),loadBg().catch(()=>({type:'none',value:'',opacity:82,blur:0}))]).then(([g,bg])=>{
   goals=g;bgSettings=bg;tempBg={...bg};applyBg(bg);applyTheme(isLight);applyCardSize(cardSize);applyAccent(currentAccent);navigate('accueil');updateSidebar();updateCatNav();checkDailyMood();loadHP();updateHPBar();
 }).catch(()=>{goals=seedGoals();applyTheme(isLight);applyCardSize(cardSize);applyAccent(currentAccent);navigate('accueil');loadHP();updateHPBar();});
