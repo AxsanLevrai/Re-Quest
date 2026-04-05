@@ -68,13 +68,19 @@ async function loadGoals(){
       if(!error && row && row.data && row.data.length) {
         const lean = row.data;
         lsSet('hz_goals_'+window.currentUser.id, lean);
+        lsSet('hz_goals', lean);
         return await Promise.all(lean.map(async g=>{
           const f={...g};
           try{const c=await idbGet('cov_'+g.id);if(c)f.cover=c;}catch(e){}
           if(f.files&&f.files.length)f.files=await Promise.all(f.files.map(async(fi,i)=>{try{const d=await idbGet('fil_'+g.id+'_'+i);if(d)return{...fi,data:d}}catch(e){}return fi;}));
           return f;
         }));
-      } else { return seedGoals(); } // No data in Supabase = new user
+      } else {
+        // No data in Supabase, check local cache for this user
+        const local = lsGet('hz_goals_'+window.currentUser.id, null);
+        if(local && local.length) return local;
+        return seedGoals();
+      }
     } catch(e) { console.error('loadGoals Supabase error:', e); }
   }
   return seedGoals();
