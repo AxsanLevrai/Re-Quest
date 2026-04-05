@@ -114,7 +114,9 @@ async function loadTrash(){
 function saveTrash(){
   lsSet('hz_trash', trash);
   if(window.sb && window.currentUser) {
-    window.sb.from('users_data').update({trash: trash}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('saveTrash error:', error); });
+    window.sb.from('users_data')
+      .upsert({ id: window.currentUser.id, trash: trash }, { onConflict: 'id' })
+      .then(({error}) => { if(error) console.error('saveTrash error:', error); });
   }
 }
 
