@@ -1374,6 +1374,10 @@ function hideExitPopup(){
 document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
   _exitAnswered = false;
   showExitPopup();
+  setTimeout(() => {
+    const epn = document.getElementById('exit-hp-player-name');
+    if(epn && window.userProfile) epn.textContent = (window.userProfile.pseudo||'').toUpperCase();
+  }, 50);
   const epn = document.getElementById('exit-hp-player-name');
   if(epn && window.userProfile) epn.textContent = (window.userProfile.pseudo||'').toUpperCase();
 });
