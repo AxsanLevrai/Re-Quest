@@ -4351,6 +4351,7 @@ loadCalEvents().then(evs=>{
 
   // ── Streak update ────────────────────────────────────────
   function onStreakUpdate(count){
+    if(!as || !as.stats) return;
     // Use best streak for cumul checks
     const best = Math.max(as.stats.streak_best||0, count);
     checkStat('streak_best', best);
