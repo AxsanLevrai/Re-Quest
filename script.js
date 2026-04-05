@@ -1026,7 +1026,6 @@ async function initApp() {
   try {
     // Load everything in order, waiting for each
     await loadMoodLog();
-    calEvents = await loadCalEvents().catch(()=>[]);
     await loadTrash();
     await loadHP();
     const [g, bg] = await Promise.all([
@@ -2551,6 +2550,10 @@ PAGE_TITLES['calendar'] = 'Calendrier';
 
 // ── INIT ─────────────────────────────────────────────────
 
+loadCalEvents().then(evs=>{
+  calEvents=evs;
+  if(currentView==='calendar') renderCalendar();
+});
 })(); // end CALENDAR MODULE
 
 
