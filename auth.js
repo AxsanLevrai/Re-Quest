@@ -48,6 +48,7 @@ function injectProfile(profile) {
 
   // Réinjecter après un court délai au cas où script.js modifie le DOM
   setTimeout(() => injectProfile(profile), 500);
+  setTimeout(() => injectProfile(profile), 1500);
 
   document.getElementById('app-root')?.style.removeProperty('display');
 })();
