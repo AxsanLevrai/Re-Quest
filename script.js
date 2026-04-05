@@ -550,7 +550,7 @@ document.getElementById('log-save-btn').addEventListener('click',()=>{
   const prog=parseInt(document.getElementById('log-prog').value)||0;
   const g=goals.find(g=>g.id===logTargetId);if(!g)return;
   const prev=g.progress||0;if(!g.log)g.log=[];g.log.push({date:todayStr(),note,prog});g.progress=prog;
-  saveGoals();closeOv('log-overlay');renderGoals();showToast('Note enregistrée !');grantXP(XP_LOG,'Journal mis à jour');checkCelebrate(g,prev);
+  saveGoals();closeOv('log-overlay');renderGoals();grantXP(XP_LOG,'Note enregistrée +'+XP_LOG+' XP');checkCelebrate(g,prev);
 });
 document.getElementById('log-cancel-btn').addEventListener('click',()=>closeOv('log-overlay'));
 
