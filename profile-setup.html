@@ -260,6 +260,7 @@ let bannerFile = null;
   if(data) {
     isEditMode = true; window._profileData = data; console.log('PROFILE DATA:', JSON.stringify(data));
     console.log('EDIT MODE - data:', data);
+    console.log('PREFILL pseudo:', data.pseudo);
     document.getElementById('pseudo').value = data.pseudo || '';
     document.getElementById('statut').value = data.statut || '';
     document.getElementById('bio').value = data.bio || '';
