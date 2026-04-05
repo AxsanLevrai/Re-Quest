@@ -4229,6 +4229,7 @@ loadCalEvents().then(evs=>{
   }
   function saveAS(){
     localStorage.setItem(LS_KEY, JSON.stringify(as));
+    console.log('saveAS called, currentUser:', window.currentUser?.id, 'unlocked:', JSON.stringify(as.unlocked));
     if(window.sb && window.currentUser) {
       window.sb.from('users_achievements').upsert({id: window.currentUser.id, data: as, updated_at: new Date().toISOString()}).then(({error}) => { if(error) console.error('saveAS error:', error); });
     }
