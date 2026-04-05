@@ -2881,7 +2881,7 @@ if(window.currentUser) {
   // ── NEW PAGE (blank) ───────────────────────────────────
   function openNewPage(){
     currentPageId = null;
-    // Vider le brouillon avant de naviguer pour eviter que restoreEditor le recharge
+    // Vider le brouillon
     const emptyDraft = {title:'',content:''};
     lsSet('hz_editor', emptyDraft);
     if(window.sb && window.currentUser){
@@ -2889,14 +2889,20 @@ if(window.currentUser) {
         .upsert({id: window.currentUser.id, editor_draft: emptyDraft}, {onConflict: 'id'})
         .then(({error})=>{ if(error) console.error('clearEditor error:', error); });
     }
+    // Vider les champs immediatement avant navigate
+    var titleEl = document.getElementById('editor-title-input');
+    var bodyEl  = document.getElementById('editor-body');
+    if(titleEl) titleEl.value = '';
+    if(bodyEl)  bodyEl.innerHTML = '';
     if(typeof navigate === 'function') navigate('editor');
+    // Revider apres navigate au cas ou
     setTimeout(function(){
       var titleEl = document.getElementById('editor-title-input');
       var bodyEl  = document.getElementById('editor-body');
       if(titleEl) titleEl.value = '';
       if(bodyEl)  bodyEl.innerHTML = '';
       renderPagesNav();
-    }, 50);
+    }, 300);
   }
 
   // ── AUTO-SAVE ─────────────────────────────────────────
