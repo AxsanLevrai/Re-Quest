@@ -1025,7 +1025,6 @@ document.querySelectorAll('.size-btn').forEach(b => {
 });
 
 // INIT
-loadTrash();
 document.getElementById('btn-open-trash')?.addEventListener('click', openTrashModal);
 async function initApp() {
   try {
