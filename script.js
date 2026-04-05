@@ -55,8 +55,29 @@ function saveGoals(){
     if(g.cover)idbSet('cov_'+g.id,g.cover).catch(()=>{});else idbDel('cov_'+g.id).catch(()=>{});
     (g.files||[]).forEach((f,i)=>{if(f.data)idbSet('fil_'+g.id+'_'+i,f.data).catch(()=>{});});
   });
+  // Supabase sync
+  if(window.sb && window.currentUser) {
+    window.sb.from('users_goals').upsert({id: window.currentUser.id, data: lean, updated_at: new Date().toISOString()}).then(({error}) => { if(error) console.error('saveGoals error:', error); });
+  }
 }
 async function loadGoals(){
+  // Try Supabase first
+  if(window.sb && window.currentUser) {
+    try {
+      const {data: row, error} = await window.sb.from('users_goals').select('data').eq('id', window.currentUser.id).single();
+      if(!error && row && row.data && row.data.length) {
+        const lean = row.data;
+        lsSet('hz_goals', lean); // sync to local
+        return await Promise.all(lean.map(async g=>{
+          const f={...g};
+          try{const c=await idbGet('cov_'+g.id);if(c)f.cover=c;}catch(e){}
+          if(f.files&&f.files.length)f.files=await Promise.all(f.files.map(async(fi,i)=>{try{const d=await idbGet('fil_'+g.id+'_'+i);if(d)return{...fi,data:d}}catch(e){}return fi;}));
+          return f;
+        }));
+      }
+    } catch(e) { console.error('loadGoals Supabase error:', e); }
+  }
+  // Fallback to local
   const lean=lsGet('hz_goals',null);
   if(!lean||!lean.length)return seedGoals();
   try{return await Promise.all(lean.map(async g=>{
@@ -77,7 +98,12 @@ async function loadBg(){
   try{const v=await idbGet('bg_img');return{type:m.type,value:v||'',opacity:m.opacity,blur:m.blur??0};}
   catch(e){return{type:'none',value:'',opacity:82,blur:0};}
 }
-function saveMood(){lsSet('hz_mood',moodLog);}
+function saveMood(){
+  lsSet('hz_mood',moodLog);
+  if(window.sb && window.currentUser) {
+    window.sb.from('users_mood').upsert({id: window.currentUser.id, data: moodLog, updated_at: new Date().toISOString()}).then(({error}) => { if(error) console.error('saveMood error:', error); });
+  }
+}
 function loadTrash(){trash=lsGet('hz_trash',[]);}
 function saveTrash(){lsSet('hz_trash',trash);}
 
@@ -982,7 +1008,15 @@ Promise.all([loadGoals().catch(()=>seedGoals()),loadBg().catch(()=>({type:'none'
   goals=g;bgSettings=bg;tempBg={...bg};applyBg(bg);applyTheme(isLight);applyCardSize(cardSize);applyAccent(currentAccent);navigate('accueil');updateSidebar();updateCatNav();checkDailyMood();loadHP();updateHPBar();
 }).catch(()=>{goals=seedGoals();applyTheme(isLight);applyCardSize(cardSize);applyAccent(currentAccent);navigate('accueil');loadHP();updateHPBar();});
 
-function loadMoodLog(){moodLog=lsGet('hz_mood',[]);}
+async function loadMoodLog(){
+  if(window.sb && window.currentUser) {
+    try {
+      const {data: row, error} = await window.sb.from('users_mood').select('data').eq('id', window.currentUser.id).single();
+      if(!error && row && row.data) { moodLog = row.data; lsSet('hz_mood', moodLog); return; }
+    } catch(e) { console.error('loadMoodLog error:', e); }
+  }
+  moodLog=lsGet('hz_mood',[]);
+}
 
 // ── XP SYSTEM ──────────────────────────────────────────────
 const XP_STEP = 15;   // Étape cochée
@@ -2547,10 +2581,19 @@ loadCalEvents().then(evs=>{
 
   // ── PERSISTENCE ────────────────────────────────────────
   function loadPages(){
-    try { pages = JSON.parse(localStorage.getItem('hz_pages') || '[]'); } catch(e){ pages = []; }
+    try {
+      if(window.sb && window.currentUser) {
+        const {data: row, error} = await window.sb.from('users_pages').select('data').eq('id', window.currentUser.id).single();
+        if(!error && row && row.data) { pages = row.data; localStorage.setItem('hz_pages', JSON.stringify(pages)); }
+        else { pages = JSON.parse(localStorage.getItem('hz_pages') || '[]'); }
+      } else { pages = JSON.parse(localStorage.getItem('hz_pages') || '[]'); }
+    } catch(e){ pages = []; }
   }
   function savePages(){
     localStorage.setItem('hz_pages', JSON.stringify(pages));
+    if(window.sb && window.currentUser) {
+      window.sb.from('users_pages').upsert({id: window.currentUser.id, data: pages, updated_at: new Date().toISOString()}).then(({error}) => { if(error) console.error('savePages error:', error); });
+    }
   }
   function genId(){
     return 'pg_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
@@ -3769,10 +3812,21 @@ loadCalEvents().then(evs=>{
 
   // ── Persistence ─────────────────────────────────────────
   function loadUnlocked(){
-    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch(e){ return []; }
+    try {
+      if(window.sb && window.currentUser) {
+        const {data: row, error} = await window.sb.from('users_data').select('map_unlocked').eq('id', window.currentUser.id).single();
+        if(!error && row && row.map_unlocked) { localStorage.setItem(LS_KEY, JSON.stringify(row.map_unlocked)); return row.map_unlocked; }
+      }
+      return JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    } catch(e){ return []; }
   }
   function saveUnlocked(arr){
-    try { localStorage.setItem(LS_KEY, JSON.stringify(arr)); } catch(e){}
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(arr));
+      if(window.sb && window.currentUser) {
+        window.sb.from('users_data').update({map_unlocked: arr}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('saveMap error:', error); });
+      }
+    } catch(e){}
   }
 
   // ── Stats complètes par catégorie ───────────────────────
@@ -4153,12 +4207,23 @@ loadCalEvents().then(evs=>{
   let as = {}; // achievement state
 
   function loadAS(){
-    try{ as = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ as={}; }
+    try{
+      if(window.sb && window.currentUser) {
+        const {data: row, error} = await window.sb.from('users_achievements').select('data').eq('id', window.currentUser.id).single();
+        if(!error && row && row.data) { as = row.data; localStorage.setItem(LS_KEY, JSON.stringify(as)); }
+        else { as = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }
+      } else { as = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }
+    }catch(e){ as={}; }
     if(!as.unlocked)  as.unlocked  = {};
     if(!as.stats)     as.stats     = {};
     if(!as.tracking)  as.tracking  = {};
   }
-  function saveAS(){ localStorage.setItem(LS_KEY, JSON.stringify(as)); }
+  function saveAS(){
+    localStorage.setItem(LS_KEY, JSON.stringify(as));
+    if(window.sb && window.currentUser) {
+      window.sb.from('users_achievements').upsert({id: window.currentUser.id, data: as, updated_at: new Date().toISOString()}).then(({error}) => { if(error) console.error('saveAS error:', error); });
+    }
+  }
   function isUnlocked(id){ return !!as.unlocked[id]; }
   function todayS(){ return new Date().toISOString().split('T')[0]; }
   function yesterdayS(){
