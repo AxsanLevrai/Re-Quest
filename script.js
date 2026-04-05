@@ -4622,21 +4622,23 @@ function buildProfileView() {
   const u = window.currentUser || {};
   const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR', {month:'long', year:'numeric'}) : '';
   el.innerHTML = `
-    <div style="max-width:700px;margin:0 auto;padding:24px 16px">
-      <div style="position:relative;border-radius:12px;overflow:hidden;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.1);margin-bottom:16px">
-        <div style="height:160px;background:${p.banniere_url ? 'url('+p.banniere_url+') center/cover' : 'linear-gradient(135deg,rgba(0,245,255,0.1),rgba(139,91,255,0.1))'};"></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:16px;padding:0 24px;margin-bottom:16px">
-        <div style="width:72px;height:72px;border-radius:50%;border:3px solid rgba(0,245,255,0.4);overflow:hidden;background:var(--night2);flex-shrink:0">
-          <img src="${p.avatar_url||''}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+    <div style="max-width:680px;margin:0 auto;padding:24px 16px">
+      <div style="background:rgba(8,6,20,0.75);border:1px solid rgba(0,245,255,0.12);border-radius:16px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 0 40px rgba(0,245,255,0.04)">
+        <!-- Bannière -->
+        <div style="height:180px;background:${p.banniere_url ? 'url('+p.banniere_url+') center/cover no-repeat' : 'linear-gradient(135deg,rgba(0,245,255,0.08),rgba(139,91,255,0.12))'};position:relative;">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(8,6,20,0.8))"></div>
         </div>
-      </div>
-      <div style="padding:0 24px 24px">
-        <div style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px">${p.pseudo||'Aventurier'}</div>
-        <div style="font-size:13px;color:var(--accent);margin-bottom:8px">${p.statut||''}</div>
-        <div style="font-size:12px;color:var(--fog);margin-bottom:16px">⚔️ Aventurier depuis ${joined}</div>
-        <div style="font-size:13px;color:var(--mist);line-height:1.6;margin-bottom:24px">${p.bio||''}</div>
-        <button onclick="window.location.href='profile-setup.html'" style="padding:8px 20px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.2);border-radius:6px;color:var(--accent);cursor:pointer;font-size:13px">✏️ Modifier le profil</button>
+        <!-- Avatar + infos -->
+        <div style="padding:0 24px 24px;margin-top:-36px;position:relative">
+          <div style="width:72px;height:72px;border-radius:50%;border:3px solid rgba(0,245,255,0.4);overflow:hidden;background:var(--night2);margin-bottom:12px;box-shadow:0 0 16px rgba(0,245,255,0.2)">
+            <img src="${p.avatar_url||''}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#e8e6f0;margin-bottom:4px;font-family:'Playfair Display',serif">${p.pseudo||'Aventurier'}</div>
+          <div style="font-size:13px;color:var(--accent);margin-bottom:6px">${p.statut||''}</div>
+          <div style="font-size:11px;color:var(--fog);margin-bottom:16px;letter-spacing:0.5px">⚔️ Aventurier depuis ${joined}</div>
+          ${p.bio ? '<div style="font-size:13px;color:#9896aa;line-height:1.7;margin-bottom:20px;padding:12px;background:rgba(0,245,255,0.03);border-radius:8px;border-left:2px solid rgba(0,245,255,0.2)">'+p.bio+'</div>' : ''}
+          <button onclick="window.location.href='profile-setup.html'" style="padding:8px 20px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.2);border-radius:6px;color:var(--accent);cursor:pointer;font-size:13px;transition:all 0.2s" onmouseover="this.style.background='rgba(0,245,255,0.15)'" onmouseout="this.style.background='rgba(0,245,255,0.08)'">✏️ Modifier le profil</button>
+        </div>
       </div>
     </div>`;
 }
