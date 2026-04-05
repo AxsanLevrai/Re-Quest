@@ -258,7 +258,7 @@ let bannerFile = null;
   // Check if profile already exists
   const { data } = await sb.from('users_profiles').select('*').eq('id', currentUser.id).single();
   if(data) {
-    isEditMode = true; window._profileData = data;
+    isEditMode = true; window._profileData = data; console.log('PROFILE DATA:', JSON.stringify(data));
     console.log('EDIT MODE - data:', data);
     document.getElementById('pseudo').value = data.pseudo || '';
     document.getElementById('statut').value = data.statut || '';
