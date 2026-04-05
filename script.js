@@ -673,7 +673,7 @@ function renderTrashModal(){
     const sel=getSelected(); if(!sel.length) return;
     if(!confirm('Supprimer définitivement '+sel.length+' quête'+(sel.length>1?'s':'')+' ? Irréversible.')) return;
     trash=trash.filter(t=>!sel.includes(String(t.id)));
-    saveTrash();renderTrashModal();updateTrashDesc();
+    saveTrash();saveGoals();renderTrashModal();updateTrashDesc();
     showToast('Supprimé définitivement.');
   };
   updateBar();
