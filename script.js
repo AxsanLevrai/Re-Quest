@@ -1374,6 +1374,8 @@ function hideExitPopup(){
 document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
   _exitAnswered = false;
   showExitPopup();
+  const epn = document.getElementById('exit-hp-player-name');
+  if(epn && window.userProfile) epn.textContent = (window.userProfile.pseudo||'').toUpperCase();
 });
 
 // ── SIDEBAR TOGGLE ─────────────────────────────────────────
