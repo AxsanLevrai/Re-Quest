@@ -4112,8 +4112,8 @@ loadCalEvents().then(evs=>{
   }
 
   // ── Full render ──────────────────────────────────────────
-  function renderMap(animateNew){
-    var prev    = loadUnlocked();
+  async function renderMap(animateNew){
+    var prev    = await loadUnlocked();
     var current = computeUnlocked();
     var hasNew  = current.some(function(z){ return prev.indexOf(z) === -1; });
     saveUnlocked(current);
