@@ -1,7 +1,7 @@
 const ICONS=['🎯','✈️','📚','💪','🎨','🏃','🌍','🎵','💻','🏠','🌱','🧘','🤝','🚀','⭐','🏆','🎓','🦋','🌊','🔥','💡','🎭','🎤','📝','🍃','🎸','🏋️','🌺','🎬','🔬'];
 const PALETTE=['#e8c96a','#5ec98a','#6aa8e8','#e8706a','#b06ae8','#e8906a','#6ae8d4','#e86aa8','#a8e86a'];
 const CAT_COLORS={'Personnel':'#e8c96a','Projets':'#5ec98a','Carriere':'#6aa8e8','Apprentissage':'#b06ae8','Sport':'#e8706a','Creatif':'#e8906a','Voyage':'#6ae8d4','Social':'#e86aa8','Bien-etre':'#a8e86a'};
-const PAGE_TITLES={accueil:'Accueil',goals:'Toutes mes quêtes',stats:'Statistiques',timeline:'Chronologie',mood:'Mon Humeur',params:'Paramètres',editor:'Nouvelle page',achievements:'Succès'};
+const PAGE_TITLES={profile:'Mon Profil',accueil:'Accueil',goals:'Toutes mes quêtes',stats:'Statistiques',timeline:'Chronologie',mood:'Mon Humeur',params:'Paramètres',editor:'Nouvelle page',achievements:'Succès'};
 const BG_PRESETS=[
   {label:'Montagne',css:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)'},
   {label:'Aurora',css:'linear-gradient(135deg,#0f2027,#203a43,#2c5364)'},
@@ -170,6 +170,7 @@ function navigate(view){
   else if(view==='accueil')renderAccueil();
   else if(view==='editor'){ if(window._editorInit) window._editorInit(); }
   else if(view==='params'){ updateTrashDesc(); buildIntrosGrid(); }
+  else if(view==='profile'){ buildProfileView(); }
 }
 // ACCUEIL
 function renderAccueil(){
@@ -4612,3 +4613,28 @@ loadCalEvents().then(evs=>{
     };
   },800);
 })();
+
+// ── PROFILE VIEW ─────────────────────────────────────────
+function buildProfileView() {
+  const el = document.getElementById('view-profile');
+  if (!el) return;
+  const p = window.userProfile || {};
+  const u = window.currentUser || {};
+  const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR', {month:'long', year:'numeric'}) : '';
+  el.innerHTML = `
+    <div style="max-width:700px;margin:0 auto;padding:24px 16px">
+      <div style="position:relative;border-radius:12px;overflow:hidden;margin-bottom:60px;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.1)">
+        <div style="height:160px;background:${p.banniere_url ? 'url('+p.banniere_url+') center/cover' : 'linear-gradient(135deg,rgba(0,245,255,0.1),rgba(139,91,255,0.1))'};"></div>
+        <div style="position:absolute;bottom:-40px;left:24px;width:80px;height:80px;border-radius:50%;border:3px solid var(--night1);overflow:hidden;background:var(--night2)">
+          <img src="${p.avatar_url||''}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+        </div>
+      </div>
+      <div style="padding:0 24px 24px">
+        <div style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px">${p.pseudo||'Aventurier'}</div>
+        <div style="font-size:13px;color:var(--accent);margin-bottom:8px">${p.statut||''}</div>
+        <div style="font-size:12px;color:var(--fog);margin-bottom:16px">⚔️ Aventurier depuis ${joined}</div>
+        <div style="font-size:13px;color:var(--mist);line-height:1.6;margin-bottom:24px">${p.bio||''}</div>
+        <button onclick="window.location.href='profile-setup.html'" style="padding:8px 20px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.2);border-radius:6px;color:var(--accent);cursor:pointer;font-size:13px">✏️ Modifier le profil</button>
+      </div>
+    </div>`;
+}
