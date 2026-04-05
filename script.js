@@ -1551,8 +1551,10 @@ document.getElementById('sidebar-quit-btn').addEventListener('click', ()=>{
     const wc=document.getElementById('editor-wc');
     if(!body) return;
 
-    // Restore — charge depuis Supabase puis applique
+    // Restore — charge depuis Supabase puis applique, seulement si pas de page existante ouverte
     async function restoreEditor(){
+      // Si une page existante est ouverte, ne pas ecraser avec le brouillon
+      if(typeof window._currentPageId !== 'undefined' && window._currentPageId !== null) return;
       if(window.sb && window.currentUser){
         try {
           const {data: row} = await window.sb.from('users_data')
@@ -2743,6 +2745,11 @@ if(window.currentUser) {
   // ── STATE ──────────────────────────────────────────────
   var pages = [];
   var currentPageId = null; // null = new unsaved page
+  // Exposer sur window pour que restoreEditor puisse le lire
+  Object.defineProperty(window, '_currentPageId', {
+    get: function(){ return currentPageId; },
+    configurable: true
+  });
   var pagesSaveTimer = null;
 
   // ── PERSISTENCE ────────────────────────────────────────
