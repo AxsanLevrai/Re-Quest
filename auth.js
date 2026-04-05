@@ -53,3 +53,8 @@ window.logout = async function() {
   await window.sb.auth.signOut();
   window.location.href = 'login.html';
 };
+
+window.supabaseSignOut = async function() {
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
+};
