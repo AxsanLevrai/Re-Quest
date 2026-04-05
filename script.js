@@ -1086,7 +1086,7 @@ async function loadMoodLog(){
 
 // ── XP SYSTEM ──────────────────────────────────────────────
 const XP_STEP = 15;   // Étape cochée
-const XP_QUEST = 50;  // Quête terminée
+const XP_QUEST = 20;  // Quête terminée
 const XP_LOG = 5;     // Journal mis à jour
 
 // ── Difficulty-based XP (1★=15 · 2★=18 · 3★=22 · 4★=30 · 5★=45) ──
