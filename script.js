@@ -3180,7 +3180,7 @@ if(window.currentUser) {
   function nodeSize(n){
     var fs=n.fontSize||13, lines=(n.text||'Idée').split('\n');
     var maxLen=lines.reduce(function(m,l){return Math.max(m,l.length);},0);
-    return {w:Math.max(80,Math.min(240,Math.ceil(maxLen*fs*0.58)+40)),
+    return {w:Math.max(80,Math.min(520,Math.ceil(maxLen*fs*0.62)+40)),
             h:Math.max(36,Math.ceil(lines.length*fs*1.6)+16)};
   }
 
