@@ -259,6 +259,7 @@ document.addEventListener('DOMContentLoaded', async function(){
   const { data } = await sb.from('users_profiles').select('*').eq('id', currentUser.id).single();
   if(data) {
     isEditMode = true;
+    console.log('EDIT MODE - data:', data);
     document.getElementById('pseudo').value = data.pseudo || '';
     document.getElementById('statut').value = data.statut || '';
     document.getElementById('bio').value = data.bio || '';
