@@ -15,6 +15,8 @@ function injectProfile(profile) {
   const nav = document.getElementById('nav-pseudo');
   if(nav) nav.textContent = profile.pseudo || 'Profil';
   const avatar = document.getElementById('nav-avatar');
+  const topbarAvatar = document.getElementById('topbar-avatar');
+  if(topbarAvatar && profile.avatar_url) topbarAvatar.src = profile.avatar_url;
   if(avatar && profile.avatar_url) avatar.src = profile.avatar_url;
 }
 
