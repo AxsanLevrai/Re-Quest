@@ -65,7 +65,7 @@ async function loadGoals(){
   if(window.sb && window.currentUser) {
     try {
       const {data: row, error} = await window.sb.from('users_goals').select('data').eq('id', window.currentUser.id).single();
-      if(!error && row && row.data && row.data.length) {
+      if(!error && row && row.data !== null && row.data !== undefined) {
         const lean = row.data;
         lsSet('hz_goals_'+window.currentUser.id, lean);
         lsSet('hz_goals', lean);
