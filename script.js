@@ -3268,9 +3268,18 @@ if(window.currentUser) {
     ng.querySelectorAll('.mmN').forEach(function(el){
       el.addEventListener('mousedown',function(e){
         if(e.target.classList.contains('mmH')) return;
-        e.stopPropagation(); onNodeDown(e,el.dataset.id);
+        e.stopPropagation();
+        var nid=el.dataset.id;
+        var now=Date.now();
+        if(el._lastDown && now-el._lastDown<350){
+          // Double clic détecté
+          el._lastDown=0;
+          openTextEdit(nid);
+          return;
+        }
+        el._lastDown=now;
+        onNodeDown(e,nid);
       });
-      el.addEventListener('dblclick',function(e){e.stopPropagation();e.preventDefault();openTextEdit(el.dataset.id);});
     });
     ng.querySelectorAll('.mmH').forEach(function(el){
       el.addEventListener('mousedown',function(e){e.stopPropagation();e.preventDefault();startConn(el.dataset.nid,e);});
