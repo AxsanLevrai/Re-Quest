@@ -82,7 +82,7 @@ function loadTrash(){trash=lsGet('hz_trash',[]);}
 function saveTrash(){lsSet('hz_trash',trash);}
 
 // SEED
-function seedGoals(){
+function seedGoals(){return [];//
   const y=new Date().getFullYear(),mo=new Date().getMonth();
   const dt=(dm,dd)=>new Date(y,mo+dm,dd).toISOString().split('T')[0];
   return [
