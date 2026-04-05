@@ -1052,7 +1052,12 @@ function xpProg(xp){
   const l=curLvl(xp), base=totalForLvl(l), need=xpForLvl(l), got=xp-base;
   return {l, got, need, pct: Math.min(Math.round(got/need*100), 100)};
 }
-function saveXP(){ lsSet('hz_xp', xpData); }
+function saveXP(){
+  lsSet('hz_xp', xpData);
+  if(window.sb && window.currentUser) {
+    window.sb.from('users_data').update({xp: xpData.total}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('saveXP error:', error); });
+  }
+}
 
 function applyLvlTheme(l){
   // Remove all xp level classes
@@ -1140,7 +1145,19 @@ const EXIT_QUESTIONS = [
 let hpState = { current:100, lastDay:'', exitOuiDate:'', moodMalusDate:'', moodMalusVal:0 };
 let _exitAnswered = false;
 
-function loadHP(){
+async function loadHP(){
+  if(window.sb && window.currentUser) {
+    try {
+      const {data: row} = await window.sb.from('users_data').select('hp,xp,niveau,streak,streak_best').eq('id', window.currentUser.id).maybeSingle();
+      if(row) {
+        hpState = lsGet('hz_hp', {current:100, lastDay:'', nonCount:0, moodMalusDate:'', moodMalusVal:0});
+        hpState.current = row.hp || 100;
+        lsSet('hz_hp', hpState);
+        if(row.xp !== null) { xpData = lsGet('hz_xp', {total:0}); xpData.total = row.xp; lsSet('hz_xp', xpData); }
+        return;
+      }
+    } catch(e) { console.error('loadHP error:', e); }
+  }
   hpState = lsGet('hz_hp', {current:100, lastDay:'', nonCount:0, moodMalusDate:'', moodMalusVal:0});
   if(!hpState.nonCount) hpState.nonCount = 0;
   const today = todayStr();
@@ -1164,7 +1181,12 @@ function loadHP(){
   }
   saveHP();
 }
-function saveHP(){ lsSet('hz_hp', hpState); }
+function saveHP(){
+  lsSet('hz_hp', hpState);
+  if(window.sb && window.currentUser) {
+    window.sb.from('users_data').update({hp: hpState.current}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('saveHP error:', error); });
+  }
+}
 
 function hpColor(pct){
   if(pct >= 70) return 'hsl(120,100%,50%)'; // vert
@@ -2500,7 +2522,12 @@ loadCalEvents().then(evs=>{
   function getStreak(){
     return lsGet('hz_streak', {count:0, best:0, lastDay:'', history:[]});
   }
-  function saveStreak(s){ lsSet('hz_streak', s); }
+  function saveStreak(s){
+    lsSet('hz_streak', s);
+    if(window.sb && window.currentUser) {
+      window.sb.from('users_data').update({streak: s.count, streak_best: s.best}).eq('id', window.currentUser.id).then(({error}) => { if(error) console.error('saveStreak error:', error); });
+    }
+  }
 
   function updateStreak(){
     var s = getStreak();
