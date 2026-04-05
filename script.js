@@ -1028,6 +1028,7 @@ async function initApp() {
     updateCatNav();
     checkDailyMood();
     updateHPBar();
+    updateXPBar();
   } catch(e) {
     console.error('initApp error:', e);
     goals=seedGoals();
