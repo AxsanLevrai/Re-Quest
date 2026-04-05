@@ -256,7 +256,7 @@ let bannerFile = null;
   currentUser = session.user;
 
   // Check if profile already exists
-  const { data } = await sb.from('users_profiles').select('*').eq('id', currentUser.id).single();
+  const { data } = await sb.from('users_profiles').select('*').eq('id', currentUser.id).maybeSingle();
   if(data) {
     isEditMode = true; window._profileData = data; console.log('PROFILE DATA:', JSON.stringify(data));
     console.log('EDIT MODE - data:', data);
