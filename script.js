@@ -1068,7 +1068,7 @@ const DIFF_RANK_COLORS = {1:'#8b8ba0',2:'#6aa8e8',3:'#e8c96a',4:'#ff8c42',5:'#ff
 const LVL_NAMES = ['','Novice','Apprenti','Éclaireur','Aventurier','Chasseur','Guerrier','Champion','Héros','Légende','Maître','Grand Maître','Mythique','Divin','Transcendant','ULTIME ⭐'];
 const LVL_SUBS  = ['','Commence ton voyage.','Tu apprends vite !','Le chemin s\'ouvre.','Chaque étape forge ta légende.','Tu n\'es plus le même.','Rien ne peut t\'arrêter.','Tu deviens redoutable.','Le titre de Héros est mérité.','Ta légende grandit.','La maîtrise est en toi.','Le chemin était la récompense.','Au-delà des limites.','Les dieux te regardent.','Transcendant — et pourtant tu avances.','Tu as atteint l\'ULTIME.'];
 
-let xpData = lsGet('hz_xp', {total:0});
+let xpData = {total:0};
 
 function xpForLvl(l){ return Math.floor(100 * Math.pow(1.3, l-1)); }
 function totalForLvl(l){ let t=0; for(let i=1;i<l;i++) t+=xpForLvl(i); return t; }
