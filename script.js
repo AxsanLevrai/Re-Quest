@@ -4665,17 +4665,20 @@ loadCalEvents().then(evs=>{
   // Moved to after loadAS() - see initAchievements()
 
   // ── Init ─────────────────────────────────────────────────
-  loadAS().then(() => {
-    if(!as.tracking||!as.tracking._task_reset_v1){
-      if(as.unlocked){var ids=['p1','p2','p3','p4','p5','p6','d1','d2','d4','d5'];ids.forEach(function(id){delete as.unlocked[id];});}
-      as.stats=as.stats||{};as.stats.tasks_done=0;
-      if(!as.tracking)as.tracking={};
-      as.tracking._task_reset_v1=true;as.tracking.tasks_today=0;as.tracking.tasks_today_date='';
-      as.unseen=Math.max(0,(as.unseen||0));saveAS();
-    }
-    onAppOpen();
-  });
-  onAppOpen();
+  // loadAS is called from initApp via auth-ready event
+  window.addEventListener('auth-ready', function() {
+    loadAS().then(() => {
+      if(!as.tracking||!as.tracking._task_reset_v1){
+        if(as.unlocked){var ids=['p1','p2','p3','p4','p5','p6','d1','d2','d4','d5'];ids.forEach(function(id){delete as.unlocked[id];});}
+        as.stats=as.stats||{};as.stats.tasks_done=0;
+        if(!as.tracking)as.tracking={};
+        as.tracking._task_reset_v1=true;as.tracking.tasks_today=0;as.tracking.tasks_today_date='';
+        as.unseen=Math.max(0,(as.unseen||0));
+        if(window.currentUser) saveAS();
+      }
+      onAppOpen();
+    });
+  }, {once:true});
 
   // Post-init checks (wait for hpState + streak to be loaded)
   setTimeout(()=>{
