@@ -2549,11 +2549,13 @@ navigate = function(view){
 PAGE_TITLES['calendar'] = 'Calendrier';
 
 // ── INIT ─────────────────────────────────────────────────
-
-loadCalEvents().then(evs=>{
-  calEvents=evs;
-  if(currentView==='calendar') renderCalendar();
-});
+if(window.currentUser) {
+  loadCalEvents().then(evs=>{ calEvents=evs; if(currentView==='calendar') renderCalendar(); });
+} else {
+  window.addEventListener('auth-ready', ()=>{
+    loadCalEvents().then(evs=>{ calEvents=evs; if(currentView==='calendar') renderCalendar(); });
+  }, {once:true});
+}
 })(); // end CALENDAR MODULE
 
 
