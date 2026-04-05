@@ -403,12 +403,13 @@ async function saveProfile() {
 
     if(error) throw error;
 
-    // Create initial user data record (only on first profile creation)
+    // Create initial user data record
     if(!isEditMode) {
       await sb.from('users_data').insert({
         id: currentUser.id,
         xp: 0, niveau: 1, hp: 100, streak: 0, streak_best: 0
-          });
+      });
+    }
     }
 
     showLoading(isEditMode ? 'Profil mis à jour ! ✨' : "C'est parti ! ⚔️");
