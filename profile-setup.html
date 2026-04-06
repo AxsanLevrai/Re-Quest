@@ -279,8 +279,6 @@ let bannerFile = null;
         const hint = document.querySelector('.banner-hint');
         if(hint) hint.style.display = 'none';
       }
-    }
-    document.querySelector('.btn-submit').textContent = 'Sauvegarder ✨';
     document.querySelector('h1') && (document.querySelector('h1').textContent = 'Modifier mon profil');
     updatePreview();
   }
@@ -409,8 +407,6 @@ async function saveProfile() {
         id: currentUser.id,
         xp: 0, niveau: 1, hp: 100, streak: 0, streak_best: 0
       });
-    }
-    }
 
     showLoading(isEditMode ? 'Profil mis à jour ! ✨' : "C'est parti ! ⚔️");
     setTimeout(() => { window.location.href = 'index.html?refresh=1'; }, 800);
