@@ -258,9 +258,7 @@ let bannerFile = null;
   // Check if profile already exists
   const { data } = await sb.from('users_profiles').select('*').eq('id', currentUser.id).maybeSingle();
   if(data) {
-    isEditMode = true; window._profileData = data; console.log('PROFILE DATA:', JSON.stringify(data));
-    console.log('EDIT MODE - data:', data);
-    console.log('PREFILL pseudo:', data.pseudo);
+    isEditMode = true; window._profileData = data;
     document.getElementById('pseudo').value = data.pseudo || '';
     document.getElementById('statut').value = data.statut || '';
     document.getElementById('bio').value = data.bio || '';
@@ -279,8 +277,18 @@ let bannerFile = null;
         const hint = document.querySelector('.banner-hint');
         if(hint) hint.style.display = 'none';
       }
-    document.querySelector('h1') && (document.querySelector('h1').textContent = 'Modifier mon profil');
+    }
+    // Update UI for edit mode
+    const h1 = document.querySelector('h1');
+    if(h1) h1.innerHTML = 'Modifier mon <span>profil</span>';
+    const badge = document.querySelector('.header-badge');
+    if(badge) badge.textContent = '⚔️ Modifier ton profil';
+    const btn = document.querySelector('.btn-submit');
+    if(btn) btn.textContent = 'Enregistrer les modifications ✨';
+    const subtitle = document.querySelector('.header p');
+    if(subtitle) subtitle.textContent = 'Mets à jour ton identité d'aventurier';
     updatePreview();
+    updateBioCount();
   }
 
   // Pre-fill with Google data if available
@@ -408,6 +416,7 @@ async function saveProfile() {
         xp: 0, niveau: 1, hp: 100, streak: 0, streak_best: 0
       });
 
+    }
     showLoading(isEditMode ? 'Profil mis à jour ! ✨' : "C'est parti ! ⚔️");
     setTimeout(() => { window.location.href = 'index.html?refresh=1'; }, 800);
 
