@@ -384,12 +384,14 @@ async function saveProfile() {
 
     // Upload avatar if provided
     if(avatarFile) {
-      avatar_url = await uploadFile(avatarFile, 'avatars', `${currentUser.id}/avatar`);
+      const avatarPath = currentUser.id + '/avatar_' + Date.now();
+      avatar_url = await uploadFile(avatarFile, 'avatars', avatarPath);
     }
 
     // Upload banner if provided
     if(bannerFile) {
-      banniere_url = await uploadFile(bannerFile, 'banners', `${currentUser.id}/banner`);
+      const bannerPath = currentUser.id + '/banner_' + Date.now();
+      banniere_url = await uploadFile(bannerFile, 'banners', bannerPath);
     }
 
     // Create or update profile in DB
