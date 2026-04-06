@@ -590,7 +590,7 @@ body{font-family:'Outfit',sans-serif;background:var(--night);color:var(--snow);h
 .xp-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:4px;background:rgba(255,255,255,0.6);filter:blur(2px)}
 
 /* XP TOPBAR BANNER */
-.xp-banner{display:flex;align-items:center;gap:14px;padding:0 4px;cursor:default;user-select:none;flex:1;max-width:520px;min-width:0}
+.xp-banner{display:flex;align-items:center;gap:10px;padding:14px 20px 12px;cursor:default;user-select:none;width:100%;min-width:0;border-bottom:1px solid rgba(0,245,255,0.1);margin-bottom:6px;background:rgba(0,0,0,0.2);box-sizing:border-box}
 .xp-banner-lvl{font-size:20px;font-weight:700;font-family:monospace;color:var(--xp-color,var(--accent));text-shadow:0 0 10px var(--xp-glow,rgba(0,245,255,0.6));line-height:1;flex-shrink:0;transition:all 0.5s;min-width:28px;text-align:center}
 .xp-banner-body{flex:1;min-width:0}
 .xp-banner-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:8px}
@@ -1253,11 +1253,16 @@ body.light .sidebar-quit-btn:hover {
 
 
 .hp-widget {
-  padding: 14px 20px 12px;
-  border-bottom: 1px solid rgba(0,245,255,0.1);
-  margin-bottom: 6px;
+  padding: 0 4px;
   position: relative;
-  background: rgba(0,0,0,0.2);
+  background: transparent;
+  border-bottom: none;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 220px;
+  flex-shrink: 0;
 }
 .hp-bar-frame {
   position: relative;
