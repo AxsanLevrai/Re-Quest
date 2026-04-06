@@ -293,41 +293,15 @@
 <!-- SHELL -->
 <div class="shell" id="app-shell" style="opacity:0;pointer-events:none">
   <nav class="sidebar">
-    <!-- HP BAR WIDGET -->
-    <div class="hp-widget" id="hp-widget">
-      <div class="hp-bar-frame">
-        <img src="assets/hp_bar_vide.png" class="hp-bg-img" alt="HP Bar">
-        <svg class="hp-bar-svg" viewBox="0 0 222 29" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <defs>
-            <clipPath id="hp-clip-path">
-              <rect id="hp-clip-rect" x="75" y="0" width="141" height="29"/>
-            </clipPath>
-          </defs>
-          <!-- Player name in left zone -->
-          <text x="38" y="17" text-anchor="middle" dominant-baseline="middle"
-                fill="#00f5ff" font-family="Outfit,sans-serif" font-size="11"
-                font-weight="700" letter-spacing="2"
-                style="pointer-events:none;user-select:none;filter:drop-shadow(0 0 3px #00f5ff) drop-shadow(0 0 6px rgba(0,245,255,0.6))"id="hp-player-name">...</text>
-          <!-- Glow layer -->
-          <path id="hp-bar-glow"
-                d="M 75,9 L 75,21 L 207,21 L 216,9 Z"
-                fill="#00ff66" opacity="0.35"
-                clip-path="url(#hp-clip-path)"/>
-          <!-- Main fill -->
-          <path id="hp-bar-fill"
-                d="M 75,9 L 75,21 L 207,21 L 216,9 Z"
-                fill="#00ff66" opacity="0.9"
-                clip-path="url(#hp-clip-path)"/>
-        </svg>
-      </div>
-      <div class="hp-info-row">
-        <span class="hp-label">PV</span>
-        <span class="hp-val-display">
-          <span id="hp-val">100</span>
-          <span class="hp-sep">/</span>
-          <span class="hp-max">100</span>
-        </span>
-        <span class="hp-status" id="hp-status">●</span>
+    <!-- XP BANNER -->
+    <div class="xp-banner" id="xp-banner" title="Barre d'expérience">
+      <div class="xp-banner-lvl" id="xp-banner-lvl">1</div>
+      <div class="xp-banner-body">
+        <div class="xp-banner-row">
+          <span class="xp-banner-title" id="xp-banner-title">Novice</span>
+          <span class="xp-banner-xp" id="xp-banner-xp">0 XP</span>
+        </div>
+        <div class="xp-banner-track"><div class="xp-banner-fill" id="xp-banner-fill" style="width:0%"></div></div>
       </div>
     </div>
     <!-- ACCUEIL -->
@@ -400,15 +374,32 @@
         <div class="page-title" id="page-title">Toutes mes quêtes</div>
         <div id="map-topbar-sub" style="display:none;font-size:11px;color:var(--fog);margin-top:2px;letter-spacing:0.5px">0/9 zones déverrouillées</div>
       </div>
-      <!-- XP BANNER -->
-      <div class="xp-banner" id="xp-banner" title="Barre d'expérience">
-        <div class="xp-banner-lvl" id="xp-banner-lvl">1</div>
-        <div class="xp-banner-body">
-          <div class="xp-banner-row">
-            <span class="xp-banner-title" id="xp-banner-title">Novice</span>
-            <span class="xp-banner-xp" id="xp-banner-xp">0 XP</span>
-          </div>
-          <div class="xp-banner-track"><div class="xp-banner-fill" id="xp-banner-fill" style="width:0%"></div></div>
+      <!-- HP BAR WIDGET -->
+      <div class="hp-widget" id="hp-widget">
+        <div class="hp-bar-frame">
+          <img src="assets/hp_bar_vide.png" class="hp-bg-img" alt="HP Bar">
+          <svg class="hp-bar-svg" viewBox="0 0 222 29" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <defs>
+              <clipPath id="hp-clip-path">
+                <rect id="hp-clip-rect" x="75" y="0" width="141" height="29"/>
+              </clipPath>
+            </defs>
+            <text x="38" y="17" text-anchor="middle" dominant-baseline="middle"
+                  fill="#00f5ff" font-family="Outfit,sans-serif" font-size="11"
+                  font-weight="700" letter-spacing="2"
+                  style="pointer-events:none;user-select:none;filter:drop-shadow(0 0 3px #00f5ff) drop-shadow(0 0 6px rgba(0,245,255,0.6))" id="hp-player-name">...</text>
+            <path id="hp-bar-glow" d="M 75,9 L 75,21 L 207,21 L 216,9 Z" fill="#00ff66" opacity="0.35" clip-path="url(#hp-clip-path)"/>
+            <path id="hp-bar-fill" d="M 75,9 L 75,21 L 207,21 L 216,9 Z" fill="#00ff66" opacity="0.9" clip-path="url(#hp-clip-path)"/>
+          </svg>
+        </div>
+        <div class="hp-info-row">
+          <span class="hp-label">PV</span>
+          <span class="hp-val-display">
+            <span id="hp-val">100</span>
+            <span class="hp-sep">/</span>
+            <span class="hp-max">100</span>
+          </span>
+          <span class="hp-status" id="hp-status">●</span>
         </div>
       </div>
       <div class="topbar-right">
