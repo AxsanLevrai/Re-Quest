@@ -2654,11 +2654,12 @@ if(window.currentUser) {
     if(window.sb && window.currentUser){
       try {
         const {data: row} = await window.sb.from('users_data')
-          .select('streak, streak_best').eq('id', window.currentUser.id).maybeSingle();
+          .select('streak, streak_best, streak_last_day').eq('id', window.currentUser.id).maybeSingle();
         if(row && row.streak !== null && row.streak !== undefined){
           const s = lsGet('hz_streak', {count:0, best:0, lastDay:'', history:[]});
-          s.count = row.streak;
-          s.best  = row.streak_best || s.best;
+          s.count   = row.streak;
+          s.best    = row.streak_best || s.best;
+          s.lastDay = row.streak_last_day || s.lastDay || '';
           lsSet('hz_streak', s);
           return s;
         }
@@ -2673,7 +2674,7 @@ if(window.currentUser) {
     lsSet('hz_streak', s);
     if(window.sb && window.currentUser) {
       window.sb.from('users_data')
-        .upsert({id: window.currentUser.id, streak: s.count, streak_best: s.best}, {onConflict: 'id'})
+        .upsert({id: window.currentUser.id, streak: s.count, streak_best: s.best, streak_last_day: s.lastDay}, {onConflict: 'id'})
         .then(({error}) => { if(error) console.error('saveStreak error:', error); });
     }
   }
