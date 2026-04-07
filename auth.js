@@ -14,8 +14,8 @@ function injectProfile(profile) {
   if(el) {
     const name = (profile.pseudo || '').toUpperCase();
     el.textContent = name;
-    // Adapter la taille selon la longueur
-    const fs = name.length <= 6 ? 11 : name.length <= 8 ? 9 : 7;
+    // Adapter la taille selon la longueur (viewBox 1176x94)
+    const fs = name.length <= 4 ? 36 : name.length <= 6 ? 30 : name.length <= 8 ? 24 : 20;
     el.setAttribute('font-size', fs);
   }
   const exitEl = document.getElementById('exit-hp-player-name');
