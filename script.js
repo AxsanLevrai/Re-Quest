@@ -1291,7 +1291,7 @@ function hpColor(pct){
 function updateHPBar(){
   const hp  = hpState ? hpState.current : HP_MAX;
   const pct = Math.max(0, Math.min(100, hp));
-  const MAX_W = 141; // SVG units: bar from x=75 to x=216
+  const MAX_W = 806; // SVG units: bar from x=787 to x=1593
   const clipW = Math.round(MAX_W * pct / 100);
   const color = hpColor(pct);
 
